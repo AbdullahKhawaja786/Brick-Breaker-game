@@ -20,31 +20,21 @@ void drawAnimatedBackground(sf::RenderWindow& window, float starX[], float starY
     }
 }
 
-// Draw main menu with optional sprite background
+// Draw main menu (sprite background logic removed)
 void drawMainMenu(sf::RenderWindow& window, sf::Font& font, int selectedOption,
     sf::Sprite* backgroundSprite, float starX[], float starY[], float starSize[]) {
     window.clear(sf::Color(10, 10, 30));
 
-    // Draw sprite background if available
-    if (backgroundSprite != nullptr) {
-        window.draw(*backgroundSprite);
-    }
-    else {
-        // Draw animated star background as fallback
-        drawAnimatedBackground(window, starX, starY, starSize);
-    }
+    // Draw animated star background (now always used)
+    drawAnimatedBackground(window, starX, starY, starSize);
+
 
     // Semi-transparent overlay for readability
     sf::RectangleShape overlay(sf::Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT));
     overlay.setFillColor(sf::Color(0, 0, 0, 100));
     window.draw(overlay);
 
-    // Title with glow effect
-    sf::Text titleGlow("BRICK BREAKER", font, 62);
-    titleGlow.setFillColor(sf::Color(255, 255, 100, 100));
-    titleGlow.setPosition(WINDOW_WIDTH / 2 - titleGlow.getGlobalBounds().width / 2 - 2, 78);
-    window.draw(titleGlow);
-
+    // Title (Single, clean text - glow effect removed)
     sf::Text title("BRICK BREAKER", font, 60);
     title.setFillColor(sf::Color::Yellow);
     title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 80);

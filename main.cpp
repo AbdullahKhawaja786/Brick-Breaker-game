@@ -9,6 +9,7 @@
 #include "rendering.h"
 #include "menu_system.h"
 #include "file_operations.h"
+
 int main() {
     srand(static_cast<unsigned>(time(0)));
 
@@ -16,50 +17,16 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), WINDOW_TITLE);
     window.setFramerateLimit(60);
 
-    // Load font - try multiple paths
+    // Load font
     sf::Font font;
     bool fontLoaded = false;
-
-    const char* fontPaths[] = {
-        "arial.ttf",
-        "C:/Windows/Fonts/arial.ttf",
-        "C:/Windows/Fonts/calibri.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/System/Library/Fonts/Helvetica.ttc"
-    };
-
-    for (int i = 0; i < 5; i++) {
-        if (font.loadFromFile(fontPaths[i])) {
-            fontLoaded = true;
-            std::cout << "Font loaded from: " << fontPaths[i] << std::endl;
-            break;
-        }
+    if (font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
+        fontLoaded = true;
+        std::cout << "Font loaded from: C:/Windows/Fonts/arial.ttf" << std::endl;
     }
-
     if (!fontLoaded) {
-        std::cout << "ERROR: Could not load font file!" << std::endl;
-        std::cout << "Please place arial.ttf in the same directory as the executable" << std::endl;
+        std::cerr << "Fatal Error: Failed to load required font. Exiting." << std::endl;
         return -1;
-    }
-
-    // Load background sprite (optional)
-    sf::Texture menuBackgroundTexture;
-    sf::Sprite menuBackgroundSprite;
-    bool hasMenuBackground = false;
-
-    if (menuBackgroundTexture.loadFromFile("menu_background.png")) {
-        menuBackgroundSprite.setTexture(menuBackgroundTexture);
-
-        // Scale to fit window
-        float scaleX = (float)WINDOW_WIDTH / menuBackgroundTexture.getSize().x;
-        float scaleY = (float)WINDOW_HEIGHT / menuBackgroundTexture.getSize().y;
-        menuBackgroundSprite.setScale(scaleX, scaleY);
-
-        hasMenuBackground = true;
-        std::cout << "Background image loaded successfully!" << std::endl;
-    }
-    else {
-        std::cout << "No background image found, using animated background" << std::endl;
     }
 
     // Animated background stars
@@ -344,13 +311,7 @@ int main() {
         window.clear(sf::Color(20, 20, 40));
 
         if (gameState == STATE_MAIN_MENU) {
-            if (hasMenuBackground) {
-                drawMainMenu(window, font, selectedMenuOption, &menuBackgroundSprite,
-                    starX, starY, starSize);
-            }
-            else {
-                drawMainMenu(window, font, selectedMenuOption, nullptr, starX, starY, starSize);
-            }
+            drawMainMenu(window, font, selectedMenuOption, nullptr, starX, starY, starSize);
         }
         else if (gameState == STATE_PLAYING || gameState == STATE_PAUSED) {
             drawBricks(window, bricks);

@@ -9,7 +9,6 @@
 #include "rendering.h"
 #include "menu_system.h"
 #include "file_operations.h"
-
 int main() {
     srand(static_cast<unsigned>(time(0)));
 

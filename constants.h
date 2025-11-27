@@ -16,7 +16,7 @@ const float PADDLE_Y = 550.0f;
 // Ball settings
 const float BALL_RADIUS = 8.0f;
 const float BALL_SPEED = 300.0f;
-const float BALL_SPEED_INCREMENT = 20.0f;
+const float BALL_SPEED_INCREMENT = 50.0f;
 
 // Brick settings
 const int GRID_WIDTH = 10;

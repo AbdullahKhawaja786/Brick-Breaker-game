@@ -14,13 +14,13 @@ void initializeBricks(int bricks[], int level) {
         int col = i % GRID_WIDTH;
 
         if (level == 1) {
-            // 6 rows of 1-hit bricks
-            bricks[i] = (row < 6) ? 1 : 0;
+            // 4 rows of 1-hit bricks
+            bricks[i] = (row < 4) ? 1 : 0;
 
         }
         else if (level == 2) {
-            // 7 rows, alternating 1-hit and 2-hit
-            if (row < 7) {
+            // 6 rows, alternating 1-hit and 2-hit
+            if (row < 6) {
                 bricks[i] = (row % 2 == 0) ? 2 : 1;
             }
             else {
@@ -29,8 +29,8 @@ void initializeBricks(int bricks[], int level) {
 
         }
         else if (level == 3) {
-            // 7 rows with harder bricks at top
-            if (row < 7) {
+            // 6 rows with harder bricks at top
+            if (row < 6) {
                 if (row < 2) bricks[i] = 3;
                 else if (row < 5) bricks[i] = 2;
                 else bricks[i] = 1;

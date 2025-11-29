@@ -17,16 +17,18 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), WINDOW_TITLE);
     window.setFramerateLimit(60);
 
-    // Load font
+    // ========== LOAD FONT ==========
     sf::Font font;
-    bool fontLoaded = false;
-    if (font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
-        fontLoaded = true;
-        std::cout << "Font loaded from: C:/Windows/Fonts/arial.ttf" << std::endl;
-    }
-    if (!fontLoaded) {
-        std::cerr << "Fatal Error: Failed to load required font. Exiting." << std::endl;
+    if (!font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
+        std::cerr << "ERROR: Failed to load font. Exiting." << std::endl;
         return -1;
+    }
+
+    // ========== LOAD SPRITE SHEET ==========
+    sf::Texture spriteSheet;
+    bool hasSpriteSheet = spriteSheet.loadFromFile("spritesheet.png");
+    if (!hasSpriteSheet) {
+        std::cerr << "WARNING: Could not load spritesheet.png - using fallback colors" << std::endl;
     }
 
     // Animated background stars
@@ -136,10 +138,6 @@ int main() {
                         ballVelX, ballVelY, paddleX, bricks, ballLaunched)) {
                         currentPaddleWidth = PADDLE_WIDTH;
                         gameState = STATE_PLAYING;
-                        std::cout << "Game loaded successfully!" << std::endl;
-                    }
-                    else {
-                        std::cout << "No save file found!" << std::endl;
                     }
                 }
                 else if (choice == MENU_HIGH_SCORES) {
@@ -171,7 +169,6 @@ int main() {
                 else if (choice == PAUSE_SAVE) {
                     saveGameState(SAVE_FILE, level, score, lives, ballX, ballY,
                         ballVelX, ballVelY, paddleX, bricks, ballLaunched);
-                    std::cout << "Game saved successfully!" << std::endl;
                     gameState = STATE_PLAYING;
                 }
                 else if (choice == PAUSE_SETTINGS) {
@@ -308,16 +305,24 @@ int main() {
         }
 
         // Rendering
-        window.clear(sf::Color(20, 20, 40));
+        if (gameState == STATE_MAIN_MENU) {
+            // Menu uses dark blue background
+            window.clear(sf::Color(10, 10, 30));
+        }
+        else {
+            // Game uses skin tone background (peach/beige color)
+            window.clear(sf::Color(20, 60, 20));
+        }
 
         if (gameState == STATE_MAIN_MENU) {
-            drawMainMenu(window, font, selectedMenuOption, nullptr, starX, starY, starSize);
+            drawMainMenu(window, font, selectedMenuOption, starX, starY, starSize);
         }
         else if (gameState == STATE_PLAYING || gameState == STATE_PAUSED) {
-            drawBricks(window, bricks);
-            drawPaddle(window, paddleX, currentPaddleWidth);
-            drawBall(window, ballX, ballY);
-            drawPowerUps(window, powerUpX, powerUpY, powerUpType, powerUpActive);
+            drawBricks(window, bricks, spriteSheet, hasSpriteSheet);
+            drawPaddle(window, paddleX, currentPaddleWidth, spriteSheet, hasSpriteSheet);
+            drawBall(window, ballX, ballY, spriteSheet, hasSpriteSheet);
+            drawPowerUps(window, powerUpX, powerUpY, powerUpType, powerUpActive, spriteSheet, hasSpriteSheet);
+
             drawParticles(window, particleX, particleY, particleLife, particleActive);
             drawHUD(window, font, score, lives, level);
 

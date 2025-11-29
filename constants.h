@@ -24,7 +24,7 @@ const int GRID_HEIGHT = 8;
 const int TOTAL_BRICKS = GRID_WIDTH * GRID_HEIGHT;
 const float BRICK_WIDTH = 75.0f;
 const float BRICK_HEIGHT = 25.0f;
-const float BRICK_OFFSET_X = 10.0f;
+const float BRICK_OFFSET_X = 2.0f;
 const float BRICK_OFFSET_Y = 50.0f;
 const float BRICK_SPACING = 5.0f;
 

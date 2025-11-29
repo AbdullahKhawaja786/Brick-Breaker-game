@@ -404,18 +404,6 @@ void drawSettings(sf::RenderWindow& window, sf::Font& font, float volume, int di
 
     char buffer[100];
 
-    // Volume
-    strcpy_s(buffer, "Volume: ");
-    char volumeStr[20];
-    intToString(static_cast<int>(volume), volumeStr);
-    concatStrings(buffer, volumeStr);
-    concatStrings(buffer, "%");
-
-    sf::Text volumeText(buffer, font, 30);
-    volumeText.setFillColor(sf::Color::White);
-    volumeText.setPosition(200, 250);
-    window.draw(volumeText);
-
     // Difficulty
     strcpy_s(buffer, "Difficulty: ");
     char diffStr[20];
@@ -424,7 +412,7 @@ void drawSettings(sf::RenderWindow& window, sf::Font& font, float volume, int di
 
     sf::Text diffText(buffer, font, 30);
     diffText.setFillColor(sf::Color::White);
-    diffText.setPosition(200, 320);
+    diffText.setPosition(WINDOW_WIDTH / 2 - diffText.getGlobalBounds().width / 2, 250);
     window.draw(diffText);
 
     sf::Text instructions("Use Arrow Keys to Adjust, Enter/ESC to Exit", font, 18);

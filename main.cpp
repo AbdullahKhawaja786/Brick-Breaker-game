@@ -310,8 +310,8 @@ int main() {
             window.clear(sf::Color(10, 10, 30));
         }
         else {
-            // Game uses skin tone background (peach/beige color)
-            window.clear(sf::Color(20, 60, 20));
+            // Game uses skin tone background 
+            window.clear(sf::Color(10, 15, 40));
         }
 
         if (gameState == STATE_MAIN_MENU) {

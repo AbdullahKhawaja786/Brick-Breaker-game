@@ -87,7 +87,6 @@ void drawMainMenu(sf::RenderWindow& window, sf::Font& font, int selectedOption,
     overlay.setFillColor(sf::Color(0, 0, 0, 100));
     window.draw(overlay);
 
-    // Simple title without glow effect
     sf::Text title("BRICK BREAKER", font, 60);
     title.setFillColor(sf::Color::Yellow);
     title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 80);
@@ -150,8 +149,13 @@ void drawPauseMenu(sf::RenderWindow& window, sf::Font& font, int selectedOption)
     }
 }
 
-// Draw bricks - UPDATED COORDINATES
-void drawBricks(sf::RenderWindow& window, int bricks[], sf::Texture& spriteSheet, bool useSpriteSheet) {
+// Draw bricks with individual textures - NOW WITH BRICK TYPES!
+void drawBricksWithTypes(sf::RenderWindow& window, int bricks[], int brickTypes[],
+    sf::Texture& greenIntact, sf::Texture& greenCracked,
+    sf::Texture& yellowIntact, sf::Texture& yellowCracked,
+    sf::Texture& redIntact, sf::Texture& redCracked,
+    sf::Texture& gray, bool hasTextures) {
+
     for (int i = 0; i < TOTAL_BRICKS; i++) {
         if (bricks[i] <= 0 && bricks[i] != -1) continue;
 
@@ -161,35 +165,53 @@ void drawBricks(sf::RenderWindow& window, int bricks[], sf::Texture& spriteSheet
         float x = BRICK_OFFSET_X + col * (BRICK_WIDTH + BRICK_SPACING);
         float y = BRICK_OFFSET_Y + row * (BRICK_HEIGHT + BRICK_SPACING);
 
-        if (useSpriteSheet) {
-            sf::Sprite brickSprite(spriteSheet);
+        if (hasTextures) {
+            sf::Sprite brickSprite;
 
-            // Updated sprite coordinates based on your spritesheet
-            if (bricks[i] == -1) {
-                // Unbreakable brick (gray brick)
-                brickSprite.setTextureRect(sf::IntRect(610, 500, 270, 95));
+            int currentHealth = bricks[i];
+            int originalType = brickTypes[i];  // What brick was originally (1, 2, 3, or -1)
+
+            // Select texture based on ORIGINAL TYPE and CURRENT HEALTH
+            if (originalType == -1) {
+                // Unbreakable brick - always gray
+                brickSprite.setTexture(gray);
             }
-            else if (bricks[i] == 1) {
-                // 1-hit brick (green brick with cracks)
-                brickSprite.setTextureRect(sf::IntRect(10, 215, 280, 95));
+            else if (originalType == 1) {
+                // GREEN brick (1-hit) - always show cracked since it's close to breaking
+                brickSprite.setTexture(greenCracked);
             }
-            else if (bricks[i] == 2) {
-                // 2-hit brick (yellow brick)
-                brickSprite.setTextureRect(sf::IntRect(300, 215, 280, 95));
+            else if (originalType == 2) {
+                // YELLOW brick (2-hit) - show intact or cracked based on health
+                if (currentHealth == 2) {
+                    brickSprite.setTexture(yellowIntact);  // Full health
+                }
+                else {
+                    brickSprite.setTexture(yellowCracked);  // 1 hit left
+                }
             }
-            else if (bricks[i] >= 3) {
-                // 3-hit brick (red brick)
-                brickSprite.setTextureRect(sf::IntRect(590, 215, 280, 95));
+            else if (originalType == 3) {
+                // RED brick (3-hit) - show intact or cracked based on health
+                if (currentHealth == 3) {
+                    brickSprite.setTexture(redIntact);  // Full health
+                }
+                else if (currentHealth == 2) {
+                    brickSprite.setTexture(redCracked);  // 2 hits left
+                }
+                else {
+                    brickSprite.setTexture(redCracked);  // 1 hit left - still red
+                }
             }
 
-            float scaleX = BRICK_WIDTH / brickSprite.getTextureRect().width;
-            float scaleY = BRICK_HEIGHT / brickSprite.getTextureRect().height;
+            // Scale to fit brick size
+            float scaleX = BRICK_WIDTH / brickSprite.getLocalBounds().width;
+            float scaleY = BRICK_HEIGHT / brickSprite.getLocalBounds().height;
             brickSprite.setScale(scaleX, scaleY);
             brickSprite.setPosition(x, y);
 
             window.draw(brickSprite);
         }
         else {
+            // Fallback colored rectangles
             sf::RectangleShape brick(sf::Vector2f(BRICK_WIDTH, BRICK_HEIGHT));
             brick.setPosition(x, y);
 
@@ -213,15 +235,15 @@ void drawBricks(sf::RenderWindow& window, int bricks[], sf::Texture& spriteSheet
     }
 }
 
-// Draw paddle - UPDATED COORDINATES
-void drawPaddle(sf::RenderWindow& window, float paddleX, float paddleWidth, sf::Texture& spriteSheet, bool useSpriteSheet) {
-    if (useSpriteSheet) {
-        sf::Sprite paddleSprite(spriteSheet);
-        // Medium paddle from spritesheet
-        paddleSprite.setTextureRect(sf::IntRect(10, 710, 230, 50));
+// Draw paddle
+void drawPaddle(sf::RenderWindow& window, float paddleX, float paddleWidth,
+    sf::Texture& paddleTexture, bool hasTexture) {
 
-        float scaleX = paddleWidth / paddleSprite.getTextureRect().width;
-        float scaleY = PADDLE_HEIGHT / paddleSprite.getTextureRect().height;
+    if (hasTexture) {
+        sf::Sprite paddleSprite(paddleTexture);
+
+        float scaleX = paddleWidth / paddleSprite.getLocalBounds().width;
+        float scaleY = PADDLE_HEIGHT / paddleSprite.getLocalBounds().height;
         paddleSprite.setScale(scaleX, scaleY);
         paddleSprite.setPosition(paddleX, PADDLE_Y);
 
@@ -237,62 +259,57 @@ void drawPaddle(sf::RenderWindow& window, float paddleX, float paddleWidth, sf::
     }
 }
 
-// Draw ball - UPDATED COORDINATES
-void drawBall(sf::RenderWindow& window, float ballX, float ballY, sf::Texture& spriteSheet, bool useSpriteSheet) {
-    if (useSpriteSheet) {
-        sf::Sprite ballSprite(spriteSheet);
-        // Blue ball from spritesheet
-        ballSprite.setTextureRect(sf::IntRect(1030, 510, 50, 50));
+// Draw ball - using texture or circle
+void drawBall(sf::RenderWindow& window, float ballX, float ballY,
+    sf::Texture& ballTexture, bool hasTexture) {
 
-        float scale = (BALL_RADIUS * 2) / ballSprite.getTextureRect().width;
+    if (hasTexture) {
+        sf::Sprite ballSprite(ballTexture);
+
+        float scale = (BALL_RADIUS * 2) / ballSprite.getLocalBounds().width;
         ballSprite.setScale(scale, scale);
         ballSprite.setPosition(ballX - BALL_RADIUS, ballY - BALL_RADIUS);
 
         window.draw(ballSprite);
     }
     else {
+        // Always draw circle for perfect round shape
         sf::CircleShape ball(BALL_RADIUS);
         ball.setPosition(ballX - BALL_RADIUS, ballY - BALL_RADIUS);
         ball.setFillColor(sf::Color::White);
-        ball.setOutlineColor(sf::Color(200, 200, 255));
+        ball.setOutlineColor(sf::Color(100, 150, 255));
         ball.setOutlineThickness(2);
         window.draw(ball);
     }
 }
 
-// Draw power-ups - UPDATED COORDINATES
-void drawPowerUps(sf::RenderWindow& window, float powerUpX[], float powerUpY[],
-    int powerUpType[], bool powerUpActive[], sf::Texture& spriteSheet, bool useSpriteSheet) {
+// Draw power-ups with textures
+void drawPowerUpsSimple(sf::RenderWindow& window, float powerUpX[], float powerUpY[],
+    int powerUpType[], bool powerUpActive[],
+    sf::Texture& heartTex, sf::Texture& starTex, bool hasTextures) {
+
     for (int i = 0; i < MAX_POWERUPS; i++) {
         if (!powerUpActive[i]) continue;
 
-        if (useSpriteSheet) {
-            sf::Sprite powerUpSprite(spriteSheet);
+        if (hasTextures) {
+            sf::Sprite powerUpSprite;
 
-            if (powerUpType[i] == POWERUP_MULTIBALL) {
-                // Multi-ball powerup (three balls icon)
-                powerUpSprite.setTextureRect(sf::IntRect(490, 710, 110, 60));
+            // Use heart for extra life, star for others
+            if (powerUpType[i] == POWERUP_EXTRA_LIFE) {
+                powerUpSprite.setTexture(heartTex);
             }
-            else if (powerUpType[i] == POWERUP_LARGER_PADDLE) {
-                // Larger paddle powerup (arrows icon)
-                powerUpSprite.setTextureRect(sf::IntRect(910, 170, 140, 50));
-            }
-            else if (powerUpType[i] == POWERUP_SLOWER_BALL) {
-                // Slower ball powerup (slow text)
-                powerUpSprite.setTextureRect(sf::IntRect(910, 60, 140, 50));
-            }
-            else if (powerUpType[i] == POWERUP_EXTRA_LIFE) {
-                // Extra life powerup (heart icon)
-                powerUpSprite.setTextureRect(sf::IntRect(1260, 510, 50, 50));
+            else {
+                powerUpSprite.setTexture(starTex);
             }
 
-            float scale = POWERUP_SIZE / powerUpSprite.getTextureRect().width;
+            float scale = POWERUP_SIZE / powerUpSprite.getLocalBounds().width;
             powerUpSprite.setScale(scale, scale);
             powerUpSprite.setPosition(powerUpX[i], powerUpY[i]);
 
             window.draw(powerUpSprite);
         }
         else {
+            // Fallback colored squares
             sf::RectangleShape powerUp(sf::Vector2f(POWERUP_SIZE, POWERUP_SIZE));
             powerUp.setPosition(powerUpX[i], powerUpY[i]);
 

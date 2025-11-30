@@ -24,12 +24,41 @@ int main() {
         return -1;
     }
 
-    // ========== LOAD SPRITE SHEET ==========
-    sf::Texture spriteSheet;
-    bool hasSpriteSheet = spriteSheet.loadFromFile("spritesheet.png");
-    if (!hasSpriteSheet) {
-        std::cerr << "WARNING: Could not load spritesheet.png - using fallback colors" << std::endl;
+    // ========== LOAD INDIVIDUAL BRICK TEXTURES ==========
+    // Green bricks (1-hit)
+    sf::Texture greenBrickIntact, greenBrickCracked;
+    bool hasGreenBrick = greenBrickIntact.loadFromFile("green_brick.png");
+    greenBrickCracked.loadFromFile("green_brick_cracked.png");
+
+    // Yellow bricks (2-hit)
+    sf::Texture yellowBrickIntact, yellowBrickCracked;
+    bool hasYellowBrick = yellowBrickIntact.loadFromFile("yellow_brick.png");
+    yellowBrickCracked.loadFromFile("yellow_brick_cracked.png");
+
+    // Red bricks (3-hit)
+    sf::Texture redBrickIntact, redBrickCracked;
+    bool hasRedBrick = redBrickIntact.loadFromFile("red_brick.png");
+    redBrickCracked.loadFromFile("red_brick_cracked.png");
+
+    // Gray brick (unbreakable)
+    sf::Texture grayBrick;
+    bool hasGrayBrick = grayBrick.loadFromFile("gray_brick.png");
+
+    // Check if at least green brick loaded
+    bool hasBrickTextures = hasGreenBrick;
+    if (!hasBrickTextures) {
+        std::cerr << "WARNING: Could not load brick textures - using fallback colors" << std::endl;
     }
+
+    // ========== LOAD OTHER TEXTURES ==========
+    sf::Texture paddleTexture, ballTexture;
+    bool hasPaddleTexture = paddleTexture.loadFromFile("paddle.png");
+    bool hasBallTexture = ballTexture.loadFromFile("ball.png");
+
+    // Power-up textures
+    sf::Texture heartTexture, starTexture;
+    bool hasHeartTexture = heartTexture.loadFromFile("heart.png");
+    bool hasStarTexture = starTexture.loadFromFile("star.png");
 
     // Animated background stars
     float starX[MAX_BG_STARS];
@@ -61,8 +90,9 @@ int main() {
     float currentPaddleWidth = PADDLE_WIDTH;
     bool ballLaunched = false;
 
-    // Bricks
-    int bricks[TOTAL_BRICKS];
+    // Bricks - NOW WITH TWO ARRAYS!
+    int bricks[TOTAL_BRICKS];           // Current health
+    int brickTypes[TOTAL_BRICKS];       // Original type (1=green, 2=yellow, 3=red, -1=unbreakable)
 
     // Power-ups
     float powerUpX[MAX_POWERUPS];
@@ -130,12 +160,26 @@ int main() {
                 if (choice == MENU_START_GAME) {
                     initializeGame(level, score, lives, ballX, ballY, ballVelX, ballVelY,
                         paddleX, bricks, ballLaunched);
+
+                    // ALSO initialize brick types!
+                    for (int i = 0; i < TOTAL_BRICKS; i++) {
+                        brickTypes[i] = bricks[i];  // Store original health as type
+                    }
+
                     currentPaddleWidth = PADDLE_WIDTH;
                     gameState = STATE_PLAYING;
                 }
                 else if (choice == MENU_LOAD_GAME) {
                     if (loadGameState(SAVE_FILE, level, score, lives, ballX, ballY,
                         ballVelX, ballVelY, paddleX, bricks, ballLaunched)) {
+
+                        // Restore brick types
+                        for (int i = 0; i < TOTAL_BRICKS; i++) {
+                            if (bricks[i] > 0) {
+                                brickTypes[i] = bricks[i];
+                            }
+                        }
+
                         currentPaddleWidth = PADDLE_WIDTH;
                         gameState = STATE_PLAYING;
                     }
@@ -255,7 +299,7 @@ int main() {
                         float brickY = BRICK_OFFSET_Y + row * (BRICK_HEIGHT + BRICK_SPACING) + BRICK_HEIGHT / 2;
 
                         score += calculateBrickScore(bricks[hitBrick]);
-                        bricks[hitBrick]--;
+                        bricks[hitBrick]--;  // Reduce current health
 
                         if (bricks[hitBrick] == 0) {
                             spawnPowerUp(brickX, brickY, powerUpX, powerUpY, powerUpType, powerUpActive);
@@ -285,6 +329,11 @@ int main() {
                     else {
                         nextLevel(level, score, ballX, ballY, ballVelX, ballVelY,
                             paddleX, bricks, ballLaunched);
+
+                        // Re-initialize brick types for new level
+                        for (int i = 0; i < TOTAL_BRICKS; i++) {
+                            brickTypes[i] = bricks[i];
+                        }
                     }
                 }
             }
@@ -306,11 +355,9 @@ int main() {
 
         // Rendering
         if (gameState == STATE_MAIN_MENU) {
-            // Menu uses dark blue background
             window.clear(sf::Color(10, 10, 30));
         }
         else {
-            // Game uses skin tone background 
             window.clear(sf::Color(10, 15, 40));
         }
 
@@ -318,10 +365,17 @@ int main() {
             drawMainMenu(window, font, selectedMenuOption, starX, starY, starSize);
         }
         else if (gameState == STATE_PLAYING || gameState == STATE_PAUSED) {
-            drawBricks(window, bricks, spriteSheet, hasSpriteSheet);
-            drawPaddle(window, paddleX, currentPaddleWidth, spriteSheet, hasSpriteSheet);
-            drawBall(window, ballX, ballY, spriteSheet, hasSpriteSheet);
-            drawPowerUps(window, powerUpX, powerUpY, powerUpType, powerUpActive, spriteSheet, hasSpriteSheet);
+            // Pass BOTH arrays to rendering
+            drawBricksWithTypes(window, bricks, brickTypes,
+                greenBrickIntact, greenBrickCracked,
+                yellowBrickIntact, yellowBrickCracked,
+                redBrickIntact, redBrickCracked,
+                grayBrick, hasBrickTextures);
+
+            drawPaddle(window, paddleX, currentPaddleWidth, paddleTexture, hasPaddleTexture);
+            drawBall(window, ballX, ballY, ballTexture, hasBallTexture);
+            drawPowerUpsSimple(window, powerUpX, powerUpY, powerUpType, powerUpActive,
+                heartTexture, starTexture, hasHeartTexture || hasStarTexture);
 
             drawParticles(window, particleX, particleY, particleLife, particleActive);
             drawHUD(window, font, score, lives, level);

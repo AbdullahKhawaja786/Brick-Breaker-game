@@ -1,4 +1,3 @@
-// game_logic.h
 #ifndef GAME_LOGIC_H
 #define GAME_LOGIC_H
 
@@ -186,20 +185,25 @@ void nextLevel(int& level, int& score, float& ballX, float& ballY,
     resetBall(ballX, ballY, ballVelX, ballVelY, paddleX, ballLaunched);
 }
 
+// SIMPLIFIED: Single common particle effect - no random patterns
 void createParticles(float x, float y, float particleX[], float particleY[],
     float particleVelX[], float particleVelY[],
     float particleLife[], bool particleActive[]) {
+
+    // Create 8 particles in a simple radial burst pattern
     int particlesCreated = 0;
     for (int i = 0; i < MAX_PARTICLES && particlesCreated < 8; i++) {
         if (!particleActive[i]) {
+            particleActive[i] = true;
             particleX[i] = x;
             particleY[i] = y;
-            float angle = (rand() % 360) * 3.14159f / 180.0f;
-            float speed = 50.0f + rand() % 100;
-            particleVelX[i] = cos(angle) * speed;
-            particleVelY[i] = sin(angle) * speed;
+
+            // Simple radial pattern - evenly spaced around a circle
+            float angle = (particlesCreated * 45.0f) * 3.14159f / 180.0f; // 45° increments
+            particleVelX[i] = cos(angle) * 100.0f;
+            particleVelY[i] = sin(angle) * 100.0f - 50.0f; // Slight upward bias
+
             particleLife[i] = PARTICLE_LIFETIME;
-            particleActive[i] = true;
             particlesCreated++;
         }
     }

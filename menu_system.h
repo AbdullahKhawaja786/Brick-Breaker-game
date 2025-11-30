@@ -1,4 +1,3 @@
-// menu_system.h
 #ifndef MENU_SYSTEM_H
 #define MENU_SYSTEM_H
 
@@ -41,18 +40,10 @@ int handlePauseMenuInput(sf::Event& event, int& selectedOption) {
     return -1;
 }
 
-// Handle settings input
-void handleSettingsInput(sf::Event& event, float& volume, int& difficulty, bool& exitSettings) {
+// Handle settings input - VOLUME REMOVED, LEFT/RIGHT KEYS REMOVED
+void handleSettingsInput(sf::Event& event, int& difficulty, bool& exitSettings) {
     if (event.type == sf::Event::KeyPressed) {
-        if (event.key.code == sf::Keyboard::Left) {
-            volume -= 10.0f;
-            if (volume < 0) volume = 0;
-        }
-        else if (event.key.code == sf::Keyboard::Right) {
-            volume += 10.0f;
-            if (volume > 100) volume = 100;
-        }
-        else if (event.key.code == sf::Keyboard::Up) {
+        if (event.key.code == sf::Keyboard::Up) {
             difficulty--;
             if (difficulty < 1) difficulty = 1;
         }

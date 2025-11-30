@@ -71,7 +71,7 @@ void drawAnimatedBackground(sf::RenderWindow& window, float starX[], float starY
         star.setPosition(starX[i], starY[i]);
 
         int brightness = 150 + (i % 100);
-        star.setFillColor(sf::Color(brightness, brightness, 255));
+        star.setFillColor(sf::Color(static_cast<sf::Uint8>(brightness), static_cast<sf::Uint8>(brightness), 255));
         window.draw(star);
     }
 }
@@ -149,7 +149,7 @@ void drawPauseMenu(sf::RenderWindow& window, sf::Font& font, int selectedOption)
     }
 }
 
-// Draw bricks with individual textures - NOW WITH BRICK TYPES!
+// Draw bricks with individual textures
 void drawBricksWithTypes(sf::RenderWindow& window, int bricks[], int brickTypes[],
     sf::Texture& greenIntact, sf::Texture& greenCracked,
     sf::Texture& yellowIntact, sf::Texture& yellowCracked,
@@ -169,40 +169,31 @@ void drawBricksWithTypes(sf::RenderWindow& window, int bricks[], int brickTypes[
             sf::Sprite brickSprite;
 
             int currentHealth = bricks[i];
-            int originalType = brickTypes[i];  // What brick was originally (1, 2, 3, or -1)
+            int originalType = brickTypes[i];
 
-            // Select texture based on ORIGINAL TYPE and CURRENT HEALTH
             if (originalType == -1) {
-                // Unbreakable brick - always gray
                 brickSprite.setTexture(gray);
             }
             else if (originalType == 1) {
-                // GREEN brick (1-hit) - always show cracked since it's close to breaking
                 brickSprite.setTexture(greenCracked);
             }
             else if (originalType == 2) {
-                // YELLOW brick (2-hit) - show intact or cracked based on health
                 if (currentHealth == 2) {
-                    brickSprite.setTexture(yellowIntact);  // Full health
+                    brickSprite.setTexture(yellowIntact);
                 }
                 else {
-                    brickSprite.setTexture(yellowCracked);  // 1 hit left
+                    brickSprite.setTexture(yellowCracked);
                 }
             }
             else if (originalType == 3) {
-                // RED brick (3-hit) - show intact or cracked based on health
                 if (currentHealth == 3) {
-                    brickSprite.setTexture(redIntact);  // Full health
-                }
-                else if (currentHealth == 2) {
-                    brickSprite.setTexture(redCracked);  // 2 hits left
+                    brickSprite.setTexture(redIntact);
                 }
                 else {
-                    brickSprite.setTexture(redCracked);  // 1 hit left - still red
+                    brickSprite.setTexture(redCracked);
                 }
             }
 
-            // Scale to fit brick size
             float scaleX = BRICK_WIDTH / brickSprite.getLocalBounds().width;
             float scaleY = BRICK_HEIGHT / brickSprite.getLocalBounds().height;
             brickSprite.setScale(scaleX, scaleY);
@@ -211,7 +202,6 @@ void drawBricksWithTypes(sf::RenderWindow& window, int bricks[], int brickTypes[
             window.draw(brickSprite);
         }
         else {
-            // Fallback colored rectangles
             sf::RectangleShape brick(sf::Vector2f(BRICK_WIDTH, BRICK_HEIGHT));
             brick.setPosition(x, y);
 
@@ -259,7 +249,7 @@ void drawPaddle(sf::RenderWindow& window, float paddleX, float paddleWidth,
     }
 }
 
-// Draw ball - using texture or circle
+// Draw ball
 void drawBall(sf::RenderWindow& window, float ballX, float ballY,
     sf::Texture& ballTexture, bool hasTexture) {
 
@@ -273,7 +263,6 @@ void drawBall(sf::RenderWindow& window, float ballX, float ballY,
         window.draw(ballSprite);
     }
     else {
-        // Always draw circle for perfect round shape
         sf::CircleShape ball(BALL_RADIUS);
         ball.setPosition(ballX - BALL_RADIUS, ballY - BALL_RADIUS);
         ball.setFillColor(sf::Color::White);
@@ -283,7 +272,7 @@ void drawBall(sf::RenderWindow& window, float ballX, float ballY,
     }
 }
 
-// Draw power-ups with textures
+// Draw power-ups
 void drawPowerUpsSimple(sf::RenderWindow& window, float powerUpX[], float powerUpY[],
     int powerUpType[], bool powerUpActive[],
     sf::Texture& heartTex, sf::Texture& starTex, bool hasTextures) {
@@ -294,7 +283,6 @@ void drawPowerUpsSimple(sf::RenderWindow& window, float powerUpX[], float powerU
         if (hasTextures) {
             sf::Sprite powerUpSprite;
 
-            // Use heart for extra life, star for others
             if (powerUpType[i] == POWERUP_EXTRA_LIFE) {
                 powerUpSprite.setTexture(heartTex);
             }
@@ -309,7 +297,6 @@ void drawPowerUpsSimple(sf::RenderWindow& window, float powerUpX[], float powerU
             window.draw(powerUpSprite);
         }
         else {
-            // Fallback colored squares
             sf::RectangleShape powerUp(sf::Vector2f(POWERUP_SIZE, POWERUP_SIZE));
             powerUp.setPosition(powerUpX[i], powerUpY[i]);
 
@@ -352,7 +339,6 @@ void drawParticles(sf::RenderWindow& window, float particleX[], float particleY[
 void drawHUD(sf::RenderWindow& window, sf::Font& font, int score, int lives, int level) {
     char buffer[100];
 
-    // Score
     safeStringCopy(buffer, "Score: ");
     char scoreStr[20];
     intToString(score, scoreStr);
@@ -365,7 +351,6 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font, int score, int lives, int
     scoreText.setPosition(10, 10);
     window.draw(scoreText);
 
-    // Lives
     safeStringCopy(buffer, "Lives: ");
     char livesStr[20];
     intToString(lives, livesStr);
@@ -378,7 +363,6 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font, int score, int lives, int
     livesText.setPosition(WINDOW_WIDTH - 120, 10);
     window.draw(livesText);
 
-    // Level
     safeStringCopy(buffer, "Level: ");
     char levelStr[20];
     intToString(level, levelStr);
@@ -420,8 +404,8 @@ void drawGameOver(sf::RenderWindow& window, sf::Font& font, int score) {
     window.draw(instruction);
 }
 
-// Draw settings screen
-void drawSettings(sf::RenderWindow& window, sf::Font& font, float volume, int difficulty) {
+// Draw settings screen - VOLUME REMOVED
+void drawSettings(sf::RenderWindow& window, sf::Font& font, int difficulty) {
     window.clear(sf::Color(20, 20, 40));
 
     sf::Text title("SETTINGS", font, 50);
@@ -431,7 +415,6 @@ void drawSettings(sf::RenderWindow& window, sf::Font& font, float volume, int di
 
     char buffer[100];
 
-    // Difficulty
     safeStringCopy(buffer, "Difficulty: ");
     char diffStr[20];
     intToString(difficulty, diffStr);
@@ -462,13 +445,11 @@ void drawHighScores(sf::RenderWindow& window, sf::Font& font, int scores[], char
         char numStr[10];
         char scoreStr[20];
 
-        // Build the line: "1. Name        Score"
         intToString(i + 1, numStr);
         safeStringCopy(buffer, numStr);
         concatStrings(buffer, ". ");
         concatStrings(buffer, names[i]);
 
-        // Add spacing
         int nameLen = strlen(names[i]);
         for (int j = nameLen; j < 25; j++) {
             concatStrings(buffer, " ");

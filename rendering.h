@@ -5,6 +5,16 @@
 #include <cstring>
 #include "constants.h"
 
+// Helper function to safely copy strings
+void safeStringCopy(char dest[], const char src[]) {
+    int i = 0;
+    while (src[i] != '\0') {
+        dest[i] = src[i];
+        i++;
+    }
+    dest[i] = '\0';
+}
+
 // Helper function to convert int to string
 void intToString(int num, char str[]) {
     if (num == 0) {
@@ -326,7 +336,7 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font, int score, int lives, int
     char buffer[100];
 
     // Score
-    strcpy_s(buffer, "Score: ");
+    safeStringCopy(buffer, "Score: ");
     char scoreStr[20];
     intToString(score, scoreStr);
     concatStrings(buffer, scoreStr);
@@ -339,7 +349,7 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font, int score, int lives, int
     window.draw(scoreText);
 
     // Lives
-    strcpy_s(buffer, "Lives: ");
+    safeStringCopy(buffer, "Lives: ");
     char livesStr[20];
     intToString(lives, livesStr);
     concatStrings(buffer, livesStr);
@@ -352,7 +362,7 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font, int score, int lives, int
     window.draw(livesText);
 
     // Level
-    strcpy_s(buffer, "Level: ");
+    safeStringCopy(buffer, "Level: ");
     char levelStr[20];
     intToString(level, levelStr);
     concatStrings(buffer, levelStr);
@@ -377,7 +387,7 @@ void drawGameOver(sf::RenderWindow& window, sf::Font& font, int score) {
     window.draw(title);
 
     char buffer[100];
-    strcpy_s(buffer, "Final Score: ");
+    safeStringCopy(buffer, "Final Score: ");
     char scoreStr[20];
     intToString(score, scoreStr);
     concatStrings(buffer, scoreStr);
@@ -405,7 +415,7 @@ void drawSettings(sf::RenderWindow& window, sf::Font& font, float volume, int di
     char buffer[100];
 
     // Difficulty
-    strcpy_s(buffer, "Difficulty: ");
+    safeStringCopy(buffer, "Difficulty: ");
     char diffStr[20];
     intToString(difficulty, diffStr);
     concatStrings(buffer, diffStr);
@@ -437,7 +447,7 @@ void drawHighScores(sf::RenderWindow& window, sf::Font& font, int scores[], char
 
         // Build the line: "1. Name        Score"
         intToString(i + 1, numStr);
-        strcpy_s(buffer, numStr);
+        safeStringCopy(buffer, numStr);
         concatStrings(buffer, ". ");
         concatStrings(buffer, names[i]);
 

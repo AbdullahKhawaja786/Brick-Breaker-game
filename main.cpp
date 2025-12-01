@@ -9,69 +9,61 @@
 #include "rendering.h"
 #include "menu_system.h"
 #include "file_operations.h"
-
 int main() {
     srand(static_cast<unsigned>(time(0)));
-
     // Create window
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), WINDOW_TITLE);
     window.setFramerateLimit(60);
-
     // Load font
     sf::Font font;
     if (!font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
         std::cerr << "ERROR: Failed to load font. Exiting." << std::endl;
         return -1;
     }
-
+    // Load background images
+    sf::Texture menuBackground, gameBackground;
+    sf::Sprite menuBgSprite, gameBgSprite;
+    bool hasMenuBg = menuBackground.loadFromFile("menu_background.png");
+    if (hasMenuBg) {
+        menuBgSprite.setTexture(menuBackground);
+        float scaleX = static_cast<float>(WINDOW_WIDTH) / menuBackground.getSize().x;
+        float scaleY = static_cast<float>(WINDOW_HEIGHT) / menuBackground.getSize().y;
+        menuBgSprite.setScale(scaleX, scaleY);
+    }
+    bool hasGameBg = gameBackground.loadFromFile("game_background.png");
+    if (hasGameBg) {
+        gameBgSprite.setTexture(gameBackground);
+        float scaleX = static_cast<float>(WINDOW_WIDTH) / gameBackground.getSize().x;
+        float scaleY = static_cast<float>(WINDOW_HEIGHT) / gameBackground.getSize().y;
+        gameBgSprite.setScale(scaleX, scaleY);
+    }
     // Load brick textures
     sf::Texture greenBrickIntact, greenBrickCracked;
     bool hasGreenBrick = greenBrickIntact.loadFromFile("green_brick.png");
     greenBrickCracked.loadFromFile("green_brick_cracked.png");
-
     sf::Texture yellowBrickIntact, yellowBrickCracked;
     bool hasYellowBrick = yellowBrickIntact.loadFromFile("yellow_brick.png");
     yellowBrickCracked.loadFromFile("yellow_brick_cracked.png");
-
     sf::Texture redBrickIntact, redBrickCracked;
     bool hasRedBrick = redBrickIntact.loadFromFile("red_brick.png");
     redBrickCracked.loadFromFile("red_brick_cracked.png");
-
     sf::Texture grayBrick;
     bool hasGrayBrick = grayBrick.loadFromFile("gray_brick.png");
-
     bool hasBrickTextures = hasGreenBrick;
     if (!hasBrickTextures) {
         std::cerr << "WARNING: Could not load brick textures - using fallback colors" << std::endl;
     }
-
     // Load other textures
     sf::Texture paddleTexture, ballTexture;
     bool hasPaddleTexture = paddleTexture.loadFromFile("paddle.png");
     bool hasBallTexture = ballTexture.loadFromFile("ball.png");
-
     sf::Texture heartTexture, starTexture;
     bool hasHeartTexture = heartTexture.loadFromFile("heart.png");
     bool hasStarTexture = starTexture.loadFromFile("star.png");
-
-    // Background stars - SIMPLIFIED pattern
-    float starX[MAX_BG_STARS];
-    float starY[MAX_BG_STARS];
-    float starSpeed[MAX_BG_STARS];
-    float starSize[MAX_BG_STARS];
-
-    for (int i = 0; i < MAX_BG_STARS; i++) {
-        starX[i] = (i % 10) * (WINDOW_WIDTH / 10.0f) + (WINDOW_WIDTH / 20.0f);
-        starY[i] = (i / 10) * (WINDOW_HEIGHT / 10.0f);
-        starSpeed[i] = 20.0f + (i % 3) * 15.0f;
-        starSize[i] = 1.0f + (i % 3);
-    }
-
     // Game state
     int gameState = STATE_MAIN_MENU;
     int selectedMenuOption = 0;
     int selectedPauseOption = 0;
-
     // Game variables
     int level = 1;
     int score = 0;
@@ -83,11 +75,9 @@ int main() {
     float paddleX = WINDOW_WIDTH / 2.0f - PADDLE_WIDTH / 2.0f;
     float currentPaddleWidth = PADDLE_WIDTH;
     bool ballLaunched = false;
-
     // Bricks
     int bricks[TOTAL_BRICKS];
     int brickTypes[TOTAL_BRICKS];
-
     // Power-ups
     float powerUpX[MAX_POWERUPS];
     float powerUpY[MAX_POWERUPS];
@@ -96,7 +86,6 @@ int main() {
     for (int i = 0; i < MAX_POWERUPS; i++) {
         powerUpActive[i] = false;
     }
-
     // Particles
     float particleX[MAX_PARTICLES];
     float particleY[MAX_PARTICLES];
@@ -107,69 +96,48 @@ int main() {
     for (int i = 0; i < MAX_PARTICLES; i++) {
         particleActive[i] = false;
     }
-
     // Settings - VOLUME REMOVED
     int difficulty = 1;
     loadSettings(SETTINGS_FILE, difficulty);
-
     // High scores
     int highScores[MAX_HIGH_SCORES];
     char highScoreNames[MAX_HIGH_SCORES][MAX_NAME_LENGTH];
     loadHighScores(HIGHSCORE_FILE, highScores, highScoreNames);
-
     // Name input
     char playerName[MAX_NAME_LENGTH] = "";
     int nameLength = 0;
     bool enteringName = false;
     bool finishedNameInput = false;
-
     // Clock
     sf::Clock clock;
-
     // Game loop
     while (window.isOpen()) {
         float deltaTime = clock.restart().asSeconds();
-
-        // Update background stars - NO RANDOM
-        if (gameState == STATE_MAIN_MENU) {
-            for (int i = 0; i < MAX_BG_STARS; i++) {
-                starY[i] += starSpeed[i] * deltaTime;
-                if (starY[i] > WINDOW_HEIGHT) {
-                    starY[i] = 0;
-                }
-            }
-        }
-
         // Input handling
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
-
             if (gameState == STATE_MAIN_MENU) {
                 int choice = handleMainMenuInput(event, selectedMenuOption);
                 if (choice == MENU_START_GAME) {
                     initializeGame(level, score, lives, ballX, ballY, ballVelX, ballVelY,
                         paddleX, bricks, ballLaunched);
-
                     for (int i = 0; i < TOTAL_BRICKS; i++) {
                         brickTypes[i] = bricks[i];
                     }
-
                     currentPaddleWidth = PADDLE_WIDTH;
                     gameState = STATE_PLAYING;
                 }
                 else if (choice == MENU_LOAD_GAME) {
                     if (loadGameState(SAVE_FILE, level, score, lives, ballX, ballY,
-                        ballVelX, ballVelY, paddleX, bricks, ballLaunched)) {
-
+                       ballVelX, ballVelY, paddleX, bricks, ballLaunched)) {
                         for (int i = 0; i < TOTAL_BRICKS; i++) {
                             if (bricks[i] > 0) {
                                 brickTypes[i] = bricks[i];
                             }
                         }
-
                         currentPaddleWidth = PADDLE_WIDTH;
                         gameState = STATE_PLAYING;
                     }
@@ -245,7 +213,6 @@ int main() {
                             break;
                         }
                     }
-
                     if (isHighScore) {
                         enteringName = true;
                         nameLength = 0;
@@ -259,7 +226,6 @@ int main() {
                 }
             }
         }
-
         // Game logic update
         if (gameState == STATE_PLAYING) {
             bool leftPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ||
@@ -267,30 +233,23 @@ int main() {
             bool rightPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ||
                 sf::Keyboard::isKeyPressed(sf::Keyboard::D);
             updatePaddlePosition(paddleX, leftPressed, rightPressed, deltaTime);
-
             updateBallPosition(ballX, ballY, ballVelX, ballVelY, deltaTime, ballLaunched, paddleX);
-
             if (ballLaunched) {
                 checkWallCollisions(ballX, ballY, BALL_RADIUS, ballVelX, ballVelY);
-
                 if (checkPaddleCollision(ballX, ballY, BALL_RADIUS, paddleX, PADDLE_Y,
                     currentPaddleWidth, PADDLE_HEIGHT)) {
                     handlePaddleCollision(ballX, paddleX, currentPaddleWidth, ballVelX, ballVelY);
                 }
-
                 int hitBrick = checkBrickCollision(ballX, ballY, BALL_RADIUS, bricks);
                 if (hitBrick != -1) {
                     if (bricks[hitBrick] != -1) {
                         handleBrickCollision(ballX, ballY, hitBrick, ballVelX, ballVelY);
-
                         int row = hitBrick / GRID_WIDTH;
                         int col = hitBrick % GRID_WIDTH;
                         float brickX = BRICK_OFFSET_X + col * (BRICK_WIDTH + BRICK_SPACING) + BRICK_WIDTH / 2;
                         float brickY = BRICK_OFFSET_Y + row * (BRICK_HEIGHT + BRICK_SPACING) + BRICK_HEIGHT / 2;
-
                         score += calculateBrickScore(bricks[hitBrick]);
                         bricks[hitBrick]--;
-
                         if (bricks[hitBrick] == 0) {
                             spawnPowerUp(brickX, brickY, powerUpX, powerUpY, powerUpType, powerUpActive);
                             createParticles(brickX, brickY, particleX, particleY, particleVelX,
@@ -301,7 +260,6 @@ int main() {
                         handleBrickCollision(ballX, ballY, hitBrick, ballVelX, ballVelY);
                     }
                 }
-
                 if (checkBallLost(ballY, BALL_RADIUS)) {
                     lives--;
                     if (lives <= 0) {
@@ -311,7 +269,6 @@ int main() {
                         resetBall(ballX, ballY, ballVelX, ballVelY, paddleX, ballLaunched);
                     }
                 }
-
                 if (isLevelComplete(bricks)) {
                     if (level >= MAX_LEVELS) {
                         gameState = STATE_GAME_OVER;
@@ -319,16 +276,13 @@ int main() {
                     else {
                         nextLevel(level, score, ballX, ballY, ballVelX, ballVelY,
                             paddleX, bricks, ballLaunched);
-
                         for (int i = 0; i < TOTAL_BRICKS; i++) {
                             brickTypes[i] = bricks[i];
                         }
                     }
                 }
             }
-
             updatePowerUps(powerUpX, powerUpY, powerUpActive, deltaTime);
-
             int hitPowerUp = checkPowerUpCollision(paddleX, PADDLE_Y, currentPaddleWidth,
                 PADDLE_HEIGHT, powerUpX, powerUpY, powerUpActive);
             if (hitPowerUp != -1) {
@@ -337,21 +291,25 @@ int main() {
                 score += SCORE_POWERUP;
                 powerUpActive[hitPowerUp] = false;
             }
-
             updateParticles(particleX, particleY, particleVelX, particleVelY,
                 particleLife, particleActive, deltaTime);
         }
-
         // Rendering
-        if (gameState == STATE_MAIN_MENU) {
+        if (gameState == STATE_MAIN_MENU || gameState == STATE_SETTINGS ||
+            gameState == STATE_HIGH_SCORES || gameState == STATE_GAME_OVER) {
             window.clear(sf::Color(10, 10, 30));
+            if (hasMenuBg) {
+                window.draw(menuBgSprite);
+            }
         }
         else {
             window.clear(sf::Color(10, 15, 40));
+            if (hasGameBg) {
+                window.draw(gameBgSprite);
+            }
         }
-
         if (gameState == STATE_MAIN_MENU) {
-            drawMainMenu(window, font, selectedMenuOption, starX, starY, starSize);
+            drawMainMenuSimple(window, font, selectedMenuOption);
         }
         else if (gameState == STATE_PLAYING || gameState == STATE_PAUSED) {
             drawBricksWithTypes(window, bricks, brickTypes,
@@ -387,9 +345,6 @@ int main() {
         else if (gameState == STATE_HIGH_SCORES) {
             drawHighScores(window, font, highScores, highScoreNames);
         }
-
         window.display();
     }
-
-    return 0;
 }

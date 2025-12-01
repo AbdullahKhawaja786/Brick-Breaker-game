@@ -1,9 +1,7 @@
 #ifndef MENU_SYSTEM_H
 #define MENU_SYSTEM_H
-
 #include <SFML/Graphics.hpp>
 #include "constants.h"
-
 // Handle main menu input and return selected option
 int handleMainMenuInput(sf::Event& event, int& selectedOption) {
     if (event.type == sf::Event::KeyPressed) {
@@ -21,7 +19,6 @@ int handleMainMenuInput(sf::Event& event, int& selectedOption) {
     }
     return -1;
 }
-
 // Handle pause menu input
 int handlePauseMenuInput(sf::Event& event, int& selectedOption) {
     if (event.type == sf::Event::KeyPressed) {
@@ -39,7 +36,6 @@ int handlePauseMenuInput(sf::Event& event, int& selectedOption) {
     }
     return -1;
 }
-
 // Handle settings input - VOLUME REMOVED, LEFT/RIGHT KEYS REMOVED
 void handleSettingsInput(sf::Event& event, int& difficulty, bool& exitSettings) {
     if (event.type == sf::Event::KeyPressed) {
@@ -57,7 +53,6 @@ void handleSettingsInput(sf::Event& event, int& difficulty, bool& exitSettings) 
         }
     }
 }
-
 // Get player name input for high score
 bool getPlayerNameInput(sf::Event& event, char playerName[], int& nameLength, bool& finishedInput) {
     if (event.type == sf::Event::TextEntered) {
@@ -81,7 +76,6 @@ bool getPlayerNameInput(sf::Event& event, char playerName[], int& nameLength, bo
     }
     return false;
 }
-
 // Navigate high scores screen
 bool handleHighScoresInput(sf::Event& event) {
     if (event.type == sf::Event::KeyPressed) {
@@ -92,5 +86,4 @@ bool handleHighScoresInput(sf::Event& event) {
     }
     return false;
 }
-
 #endif

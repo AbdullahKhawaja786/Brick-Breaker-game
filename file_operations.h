@@ -1,10 +1,15 @@
 #ifndef FILE_OPERATIONS_H
 #define FILE_OPERATIONS_H
-
 #include <fstream>
-#include <cstring>
 #include "constants.h"
-
+void copyString(char dest[], const char src[], int maxLength) {
+    int i = 0;
+    while (i < maxLength - 1 && src[i] != '\0') {
+        dest[i] = src[i];
+        i++;
+    }
+    dest[i] = '\0';
+}
 // Save game state to file
 bool saveGameState(const char filename[], int level, int score, int lives,
     float ballX, float ballY, float ballVelX, float ballVelY,
@@ -13,7 +18,6 @@ bool saveGameState(const char filename[], int level, int score, int lives,
     if (!file.is_open()) {
         return false;
     }
-
     file << level << "\n";
     file << score << "\n";
     file << lives << "\n";
@@ -23,15 +27,12 @@ bool saveGameState(const char filename[], int level, int score, int lives,
     file << ballVelY << "\n";
     file << paddleX << "\n";
     file << ballLaunched << "\n";
-
     for (int i = 0; i < TOTAL_BRICKS; i++) {
         file << bricks[i] << " ";
     }
-
     file.close();
     return true;
 }
-
 // Load game state from file
 bool loadGameState(const char filename[], int& level, int& score, int& lives,
     float& ballX, float& ballY, float& ballVelX, float& ballVelY,
@@ -40,7 +41,6 @@ bool loadGameState(const char filename[], int& level, int& score, int& lives,
     if (!file.is_open()) {
         return false;
     }
-
     file >> level;
     file >> score;
     file >> lives;
@@ -50,15 +50,12 @@ bool loadGameState(const char filename[], int& level, int& score, int& lives,
     file >> ballVelY;
     file >> paddleX;
     file >> ballLaunched;
-
     for (int i = 0; i < TOTAL_BRICKS; i++) {
         file >> bricks[i];
     }
-
     file.close();
     return true;
 }
-
 // Save high score
 void saveHighScore(const char filename[], int newScore, const char playerName[],
     int scores[], char names[][MAX_NAME_LENGTH]) {
@@ -70,18 +67,15 @@ void saveHighScore(const char filename[], int newScore, const char playerName[],
             break;
         }
     }
-
     if (insertPos < MAX_HIGH_SCORES) {
         // Shift scores down
         for (int i = MAX_HIGH_SCORES - 1; i > insertPos; i--) {
             scores[i] = scores[i - 1];
-            strcpy_s(names[i], names[i - 1]);
+            copyString(names[i], names[i - 1], MAX_NAME_LENGTH);
         }
-
         scores[insertPos] = newScore;
-        strcpy_s(names[insertPos], playerName);
+        copyString(names[insertPos], playerName, MAX_NAME_LENGTH);
     }
-
     // Save to file
     std::ofstream file(filename);
     if (file.is_open()) {
@@ -92,7 +86,6 @@ void saveHighScore(const char filename[], int newScore, const char playerName[],
         file.close();
     }
 }
-
 // Load high scores
 void loadHighScores(const char filename[], int scores[], char names[][MAX_NAME_LENGTH]) {
     std::ifstream file(filename);
@@ -108,12 +101,11 @@ void loadHighScores(const char filename[], int scores[], char names[][MAX_NAME_L
         // Initialize with default values
         for (int i = 0; i < MAX_HIGH_SCORES; i++) {
             scores[i] = 0;
-            strcpy_s(names[i], "---");
+            copyString(names[i], "---", MAX_NAME_LENGTH);
         }
     }
 }
-
-// Save settings - VOLUME REMOVED
+// Save settings 
 void saveSettings(const char filename[], int difficulty) {
     std::ofstream file(filename);
     if (file.is_open()) {
@@ -121,8 +113,7 @@ void saveSettings(const char filename[], int difficulty) {
         file.close();
     }
 }
-
-// Load settings - VOLUME REMOVED
+// Load settings 
 void loadSettings(const char filename[], int& difficulty) {
     std::ifstream file(filename);
     if (file.is_open()) {
@@ -133,5 +124,4 @@ void loadSettings(const char filename[], int& difficulty) {
         difficulty = 1;
     }
 }
-
 #endif

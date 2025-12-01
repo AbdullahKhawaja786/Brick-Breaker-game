@@ -1,21 +1,17 @@
 #ifndef GAME_LOGIC_H
 #define GAME_LOGIC_H
-
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
 #include "constants.h"
 #include "collision.h"
-
 void initializeBricks(int bricks[], int level) {
     for (int i = 0; i < TOTAL_BRICKS; i++) {
         int row = i / GRID_WIDTH;
         int col = i % GRID_WIDTH;
-
         if (level == 1) {
             // 4 rows of 1-hit bricks
             bricks[i] = (row < 4) ? 1 : 0;
-
         }
         else if (level == 2) {
             // 6 rows, alternating 1-hit and 2-hit
@@ -25,7 +21,6 @@ void initializeBricks(int bricks[], int level) {
             else {
                 bricks[i] = 0;
             }
-
         }
         else if (level == 3) {
             // 6 rows with harder bricks at top
@@ -37,7 +32,6 @@ void initializeBricks(int bricks[], int level) {
             else {
                 bricks[i] = 0;
             }
-
         }
         else if (level == 4) {
             // 7 rows checkerboard with indestructible bricks
@@ -47,7 +41,6 @@ void initializeBricks(int bricks[], int level) {
             else {
                 bricks[i] = 0;
             }
-
         }
         else {
             // Level 5: Full 8 rows with mixed difficulty
@@ -58,7 +51,6 @@ void initializeBricks(int bricks[], int level) {
         }
     }
 }
-
 void initializeGame(int& level, int& score, int& lives, float& ballX, float& ballY,
     float& ballVelX, float& ballVelY, float& paddleX,
     int bricks[], bool& ballLaunched) {
@@ -71,10 +63,8 @@ void initializeGame(int& level, int& score, int& lives, float& ballX, float& bal
     ballVelX = 0.0f;
     ballVelY = 0.0f;
     ballLaunched = false;
-
     initializeBricks(bricks, level);
 }
-
 void resetBall(float& ballX, float& ballY, float& ballVelX, float& ballVelY,
     float paddleX, bool& ballLaunched) {
     ballX = paddleX + PADDLE_WIDTH / 2.0f;
@@ -83,7 +73,6 @@ void resetBall(float& ballX, float& ballY, float& ballVelX, float& ballVelY,
     ballVelY = 0.0f;
     ballLaunched = false;
 }
-
 void launchBall(float& ballVelX, float& ballVelY, bool& ballLaunched) {
     if (!ballLaunched) {
         ballVelX = BALL_SPEED * 0.5f;
@@ -91,7 +80,6 @@ void launchBall(float& ballVelX, float& ballVelY, bool& ballLaunched) {
         ballLaunched = true;
     }
 }
-
 void updateBallPosition(float& ballX, float& ballY, float ballVelX, float ballVelY,
     float deltaTime, bool ballLaunched, float paddleX) {
     if (ballLaunched) {
@@ -103,7 +91,6 @@ void updateBallPosition(float& ballX, float& ballY, float ballVelX, float ballVe
         ballY = PADDLE_Y - BALL_RADIUS - 5.0f;
     }
 }
-
 void updatePaddlePosition(float& paddleX, bool leftPressed, bool rightPressed, float deltaTime) {
     if (leftPressed && paddleX > 0) {
         paddleX -= PADDLE_SPEED * deltaTime;
@@ -116,14 +103,12 @@ void updatePaddlePosition(float& paddleX, bool leftPressed, bool rightPressed, f
         }
     }
 }
-
 int calculateBrickScore(int brickType) {
     if (brickType == 1) return SCORE_BRICK_1HIT;
     if (brickType == 2) return SCORE_BRICK_2HIT;
     if (brickType >= 3) return SCORE_BRICK_3HIT;
     return 0;
 }
-
 void spawnPowerUp(float x, float y, float powerUpX[], float powerUpY[],
     int powerUpType[], bool powerUpActive[]) {
     if (rand() % 100 < POWERUP_CHANCE) {
@@ -138,7 +123,6 @@ void spawnPowerUp(float x, float y, float powerUpX[], float powerUpY[],
         }
     }
 }
-
 void updatePowerUps(float powerUpX[], float powerUpY[], bool powerUpActive[],
     float deltaTime) {
     for (int i = 0; i < MAX_POWERUPS; i++) {
@@ -151,7 +135,6 @@ void updatePowerUps(float powerUpX[], float powerUpY[], bool powerUpActive[],
         }
     }
 }
-
 void applyPowerUp(int type, int& lives, float& paddleWidth, float& ballSpeed) {
     if (type == POWERUP_EXTRA_LIFE) {
         lives++;
@@ -163,52 +146,43 @@ void applyPowerUp(int type, int& lives, float& paddleWidth, float& ballSpeed) {
         ballSpeed = BALL_SPEED * 0.7f;
     }
 }
-
 bool isLevelComplete(int bricks[]) {
     for (int i = 0; i < TOTAL_BRICKS; i++) {
         if (bricks[i] > 0) return false;
     }
     return true;
 }
-
 void nextLevel(int& level, int& score, float& ballX, float& ballY,
     float& ballVelX, float& ballVelY, float& paddleX,
     int bricks[], bool& ballLaunched) {
     level++;
     score += SCORE_LEVEL_COMPLETE;
-
     if (level > MAX_LEVELS) {
         level = MAX_LEVELS;
     }
-
     initializeBricks(bricks, level);
     resetBall(ballX, ballY, ballVelX, ballVelY, paddleX, ballLaunched);
 }
-
-// SIMPLIFIED: Single common particle effect - no random patterns
+// particle effect 
 void createParticles(float x, float y, float particleX[], float particleY[],
     float particleVelX[], float particleVelY[],
     float particleLife[], bool particleActive[]) {
-
-    // Create 8 particles in a simple radial burst pattern
+    // Create 8 particles in a simpl burst pattern
     int particlesCreated = 0;
     for (int i = 0; i < MAX_PARTICLES && particlesCreated < 8; i++) {
         if (!particleActive[i]) {
             particleActive[i] = true;
             particleX[i] = x;
             particleY[i] = y;
-
             // Simple radial pattern - evenly spaced around a circle
             float angle = (particlesCreated * 45.0f) * 3.14159f / 180.0f; // 45° increments
             particleVelX[i] = cos(angle) * 100.0f;
             particleVelY[i] = sin(angle) * 100.0f - 50.0f; // Slight upward bias
-
             particleLife[i] = PARTICLE_LIFETIME;
             particlesCreated++;
         }
     }
 }
-
 void updateParticles(float particleX[], float particleY[], float particleVelX[],
     float particleVelY[], float particleLife[], bool particleActive[],
     float deltaTime) {
@@ -217,12 +191,10 @@ void updateParticles(float particleX[], float particleY[], float particleVelX[],
             particleX[i] += particleVelX[i] * deltaTime;
             particleY[i] += particleVelY[i] * deltaTime;
             particleLife[i] -= deltaTime;
-
             if (particleLife[i] <= 0) {
                 particleActive[i] = false;
             }
         }
     }
 }
-
 #endif

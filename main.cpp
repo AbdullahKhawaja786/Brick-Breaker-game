@@ -89,6 +89,19 @@ int main() {
         powerUpActive[i] = false;
     }
 
+    // Particle system
+    float particleX[MAX_PARTICLES];
+    float particleY[MAX_PARTICLES];
+    float particleVelX[MAX_PARTICLES];
+    float particleVelY[MAX_PARTICLES];
+    float particleLife[MAX_PARTICLES];
+    bool particleActive[MAX_PARTICLES];
+
+    // Initialize particles
+    for (int i = 0; i < MAX_PARTICLES; i++) {
+        particleActive[i] = false;
+    }
+
     // Settings
     int difficulty = 1;
     loadSettings(SETTINGS_FILE, difficulty);
@@ -242,6 +255,9 @@ int main() {
                         bricks[hitBrick]--;
                         if (bricks[hitBrick] == 0) {
                             spawnPowerUp(brickX, brickY, powerUpX, powerUpY, powerUpType, powerUpActive);
+                            // Create particles when brick is destroyed
+                            createParticles(brickX, brickY, particleX, particleY,
+                                particleVelX, particleVelY, particleLife, particleActive);
                         }
                     }
                     else {
@@ -271,6 +287,11 @@ int main() {
                 }
             }
             updatePowerUps(powerUpX, powerUpY, powerUpActive, deltaTime);
+
+            // Update particles
+            updateParticles(particleX, particleY, particleVelX, particleVelY,
+                particleLife, particleActive, deltaTime);
+
             int hitPowerUp = checkPowerUpCollision(paddleX, PADDLE_Y, currentPaddleWidth,
                 PADDLE_HEIGHT, powerUpX, powerUpY, powerUpActive);
             if (hitPowerUp != -1) {
@@ -307,6 +328,10 @@ int main() {
             drawBall(window, ballX, ballY, ballTexture, hasBallTexture);
             drawPowerUpsSimple(window, powerUpX, powerUpY, powerUpType, powerUpActive,
                 heartTexture, starTexture, hasHeartTexture || hasStarTexture);
+
+            // Draw particles
+            drawSimpleParticles(window, particleX, particleY, particleActive);
+
             drawHUD(window, font, score, lives, level);
             if (gameState == STATE_PAUSED) {
                 drawPauseMenu(window, font, selectedPauseOption);

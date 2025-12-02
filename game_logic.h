@@ -5,16 +5,35 @@
 #include <cmath>
 #include "constants.h"
 #include "collision.h"
+// Get adjusted ball speed based on difficulty
+float getDifficultyBallSpeed(int difficulty) {
+    if (difficulty == 1) return BALL_SPEED * 0.8f;  // Easy: 80% speed
+    if (difficulty == 2) return BALL_SPEED;         // Normal: 100% speed
+    if (difficulty == 3) return BALL_SPEED * 1.3f;  // Hard: 130% speed
+    return BALL_SPEED;
+}
+// Get initial lives based on difficulty
+int getDifficultyLives(int difficulty) {
+    if (difficulty == 1) return 5;  // Easy: 5 lives
+    if (difficulty == 2) return 3;  // Normal: 3 lives
+    if (difficulty == 3) return 2;  // Hard: 2 lives
+    return INITIAL_LIVES;
+}
+// Get paddle width based on difficulty
+float getDifficultyPaddleWidth(int difficulty) {
+    if (difficulty == 1) return PADDLE_WIDTH * 1.3f;  // Easy: 30% wider
+    if (difficulty == 2) return PADDLE_WIDTH;         // Normal: standard
+    if (difficulty == 3) return PADDLE_WIDTH * 0.7f;  // Hard: 30% narrower
+    return PADDLE_WIDTH;
+}
 void initializeBricks(int bricks[], int level) {
     for (int i = 0; i < TOTAL_BRICKS; i++) {
         int row = i / GRID_WIDTH;
         int col = i % GRID_WIDTH;
         if (level == 1) {
-            // 4 rows of 1-hit bricks
             bricks[i] = (row < 4) ? 1 : 0;
         }
         else if (level == 2) {
-            // 6 rows, alternating 1-hit and 2-hit
             if (row < 6) {
                 bricks[i] = (row % 2 == 0) ? 2 : 1;
             }
@@ -23,7 +42,6 @@ void initializeBricks(int bricks[], int level) {
             }
         }
         else if (level == 3) {
-            // 6 rows with harder bricks at top
             if (row < 6) {
                 if (row < 2) bricks[i] = 3;
                 else if (row < 5) bricks[i] = 2;
@@ -34,7 +52,6 @@ void initializeBricks(int bricks[], int level) {
             }
         }
         else if (level == 4) {
-            // 7 rows checkerboard with indestructible bricks
             if (row < 7) {
                 bricks[i] = ((row + col) % 2 == 0) ? -1 : 2;
             }
@@ -43,7 +60,6 @@ void initializeBricks(int bricks[], int level) {
             }
         }
         else {
-            // Level 5: Full 8 rows with mixed difficulty
             if (row < 2) bricks[i] = 3;
             else if (row < 4) bricks[i] = -1;
             else if (row < 6) bricks[i] = 2;
@@ -53,11 +69,14 @@ void initializeBricks(int bricks[], int level) {
 }
 void initializeGame(int& level, int& score, int& lives, float& ballX, float& ballY,
     float& ballVelX, float& ballVelY, float& paddleX,
-    int bricks[], bool& ballLaunched) {
+    int bricks[], bool& ballLaunched, int difficulty, float& currentPaddleWidth, float& currentBallSpeed) {
     level = 1;
     score = 0;
-    lives = INITIAL_LIVES;
-    paddleX = WINDOW_WIDTH / 2.0f - PADDLE_WIDTH / 2.0f;
+    lives = getDifficultyLives(difficulty);
+    currentPaddleWidth = getDifficultyPaddleWidth(difficulty);
+    currentBallSpeed = getDifficultyBallSpeed(difficulty);
+
+    paddleX = WINDOW_WIDTH / 2.0f - currentPaddleWidth / 2.0f;
     ballX = WINDOW_WIDTH / 2.0f;
     ballY = PADDLE_Y - BALL_RADIUS - 5.0f;
     ballVelX = 0.0f;
@@ -66,40 +85,40 @@ void initializeGame(int& level, int& score, int& lives, float& ballX, float& bal
     initializeBricks(bricks, level);
 }
 void resetBall(float& ballX, float& ballY, float& ballVelX, float& ballVelY,
-    float paddleX, bool& ballLaunched) {
-    ballX = paddleX + PADDLE_WIDTH / 2.0f;
+    float paddleX, bool& ballLaunched, float paddleWidth) {
+    ballX = paddleX + paddleWidth / 2.0f;
     ballY = PADDLE_Y - BALL_RADIUS - 5.0f;
     ballVelX = 0.0f;
     ballVelY = 0.0f;
     ballLaunched = false;
 }
-void launchBall(float& ballVelX, float& ballVelY, bool& ballLaunched) {
+void launchBall(float& ballVelX, float& ballVelY, bool& ballLaunched, float ballSpeed) {
     if (!ballLaunched) {
-        ballVelX = BALL_SPEED * 0.5f;
-        ballVelY = -BALL_SPEED;
+        ballVelX = ballSpeed * 0.5f;
+        ballVelY = -ballSpeed;
         ballLaunched = true;
     }
 }
 void updateBallPosition(float& ballX, float& ballY, float ballVelX, float ballVelY,
-    float deltaTime, bool ballLaunched, float paddleX) {
+    float deltaTime, bool ballLaunched, float paddleX, float paddleWidth) {
     if (ballLaunched) {
         ballX += ballVelX * deltaTime;
         ballY += ballVelY * deltaTime;
     }
     else {
-        ballX = paddleX + PADDLE_WIDTH / 2.0f;
+        ballX = paddleX + paddleWidth / 2.0f;
         ballY = PADDLE_Y - BALL_RADIUS - 5.0f;
     }
 }
-void updatePaddlePosition(float& paddleX, bool leftPressed, bool rightPressed, float deltaTime) {
+void updatePaddlePosition(float& paddleX, bool leftPressed, bool rightPressed, float deltaTime, float paddleWidth) {
     if (leftPressed && paddleX > 0) {
         paddleX -= PADDLE_SPEED * deltaTime;
         if (paddleX < 0) paddleX = 0;
     }
-    if (rightPressed && paddleX < WINDOW_WIDTH - PADDLE_WIDTH) {
+    if (rightPressed && paddleX < WINDOW_WIDTH - paddleWidth) {
         paddleX += PADDLE_SPEED * deltaTime;
-        if (paddleX > WINDOW_WIDTH - PADDLE_WIDTH) {
-            paddleX = WINDOW_WIDTH - PADDLE_WIDTH;
+        if (paddleX > WINDOW_WIDTH - paddleWidth) {
+            paddleX = WINDOW_WIDTH - paddleWidth;
         }
     }
 }
@@ -128,22 +147,21 @@ void updatePowerUps(float powerUpX[], float powerUpY[], bool powerUpActive[],
     for (int i = 0; i < MAX_POWERUPS; i++) {
         if (powerUpActive[i]) {
             powerUpY[i] += POWERUP_FALL_SPEED * deltaTime;
-
             if (powerUpY[i] > WINDOW_HEIGHT) {
                 powerUpActive[i] = false;
             }
         }
     }
 }
-void applyPowerUp(int type, int& lives, float& paddleWidth, float& ballSpeed) {
+void applyPowerUp(int type, int& lives, float& paddleWidth, float& ballSpeed, float basePaddleWidth) {
     if (type == POWERUP_EXTRA_LIFE) {
         lives++;
     }
     else if (type == POWERUP_LARGER_PADDLE) {
-        paddleWidth = PADDLE_WIDTH * 1.5f;
+        paddleWidth = basePaddleWidth * 1.5f;
     }
     else if (type == POWERUP_SLOWER_BALL) {
-        ballSpeed = BALL_SPEED * 0.7f;
+        ballSpeed = ballSpeed * 0.7f;
     }
 }
 bool isLevelComplete(int bricks[]) {
@@ -154,30 +172,27 @@ bool isLevelComplete(int bricks[]) {
 }
 void nextLevel(int& level, int& score, float& ballX, float& ballY,
     float& ballVelX, float& ballVelY, float& paddleX,
-    int bricks[], bool& ballLaunched) {
+    int bricks[], bool& ballLaunched, float paddleWidth) {
     level++;
     score += SCORE_LEVEL_COMPLETE;
     if (level > MAX_LEVELS) {
         level = MAX_LEVELS;
     }
     initializeBricks(bricks, level);
-    resetBall(ballX, ballY, ballVelX, ballVelY, paddleX, ballLaunched);
+    resetBall(ballX, ballY, ballVelX, ballVelY, paddleX, ballLaunched, paddleWidth);
 }
-// particle effect 
 void createParticles(float x, float y, float particleX[], float particleY[],
     float particleVelX[], float particleVelY[],
     float particleLife[], bool particleActive[]) {
-    // Create 8 particles in a simpl burst pattern
     int particlesCreated = 0;
     for (int i = 0; i < MAX_PARTICLES && particlesCreated < 8; i++) {
         if (!particleActive[i]) {
             particleActive[i] = true;
             particleX[i] = x;
             particleY[i] = y;
-            // Simple radial pattern - evenly spaced around a circle
-            float angle = (particlesCreated * 45.0f) * 3.14159f / 180.0f; // 45° increments
+            float angle = (particlesCreated * 45.0f) * 3.14159f / 180.0f;
             particleVelX[i] = cos(angle) * 100.0f;
-            particleVelY[i] = sin(angle) * 100.0f - 50.0f; // Slight upward bias
+            particleVelY[i] = sin(angle) * 100.0f - 50.0f;
             particleLife[i] = PARTICLE_LIFETIME;
             particlesCreated++;
         }

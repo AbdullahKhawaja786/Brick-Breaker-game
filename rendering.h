@@ -68,13 +68,14 @@ void drawMainMenuSimple(sf::RenderWindow& window, sf::Font& font, int selectedOp
             text.setScale(1.1f, 1.1f);
         }
         else {
-            text.setFillColor(sf::Color::White);
+            text.setFillColor(sf::Color::Black);
         }
         text.setPosition(WINDOW_WIDTH / 2 - text.getGlobalBounds().width / 2, 320 + i * 60);
         window.draw(text);
     }
     sf::Text instructions("Use Arrow Keys to Navigate, Enter to Select", font, 18);
-    instructions.setFillColor(sf::Color(200, 200, 200));
+    instructions.setFillColor(sf::Color(255, 255, 255));
+    instructions.setStyle(sf::Text::Style::Bold);
     instructions.setPosition(WINDOW_WIDTH / 2 - instructions.getGlobalBounds().width / 2, 660);
     window.draw(instructions);
 }

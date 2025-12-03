@@ -10,34 +10,37 @@
 #include "menu_system.h"
 #include "file_operations.h"
 
+using namespace std;
+using namespace sf;
+
 int main() {
     srand(static_cast<unsigned>(time(0)));
     // Create window
-    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), WINDOW_TITLE);
+    RenderWindow window(VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), WINDOW_TITLE);
     window.setFramerateLimit(60);
     // Load font
-    sf::Font font;
+    Font font;
     if (!font.loadFromFile("C:/Windows/Fonts/arial.ttf")) {
-        std::cerr << "ERROR: Failed to load font. Exiting." << std::endl;
+        cerr << "ERROR: Failed to load font. Exiting." << endl;
         return -1;
     }
 
     // Load custom title font
-    sf::Font titleFont;
+    Font titleFont;
     bool hasTitleFont = titleFont.loadFromFile("GameFont.ttf");  // Replace with your font filename
     if (!hasTitleFont) {
-        std::cerr << "WARNING: Could not load custom title font, using default" << std::endl;
+        cerr << "WARNING: Could not load custom title font, using default" << endl;
     }
 
     // Load custom menu font
-    sf::Font menuFont;
+    Font menuFont;
     bool hasMenuFont = menuFont.loadFromFile("MenuFont.ttf");  // Replace with your menu font filename
     if (!hasMenuFont) {
-        std::cerr << "WARNING: Could not load custom menu font, using default" << std::endl;
+        cerr << "WARNING: Could not load custom menu font, using default" << endl;
     }
     // Load background images
-    sf::Texture menuBackground, gameBackground;
-    sf::Sprite menuBgSprite, gameBgSprite;
+    Texture menuBackground, gameBackground;
+    Sprite menuBgSprite, gameBgSprite;
     bool hasMenuBg = menuBackground.loadFromFile("menu_background.png");
     if (hasMenuBg) {
         menuBgSprite.setTexture(menuBackground);
@@ -53,26 +56,26 @@ int main() {
         gameBgSprite.setScale(scaleX, scaleY);
     }
     // Load brick textures
-    sf::Texture greenBrickIntact, greenBrickCracked;
+    Texture greenBrickIntact, greenBrickCracked;
     bool hasGreenBrick = greenBrickIntact.loadFromFile("green_brick.png");
     greenBrickCracked.loadFromFile("green_brick_cracked.png");
-    sf::Texture yellowBrickIntact, yellowBrickCracked;
+    Texture yellowBrickIntact, yellowBrickCracked;
     bool hasYellowBrick = yellowBrickIntact.loadFromFile("yellow_brick.png");
     yellowBrickCracked.loadFromFile("yellow_brick_cracked.png");
-    sf::Texture redBrickIntact, redBrickCracked;
+    Texture redBrickIntact, redBrickCracked;
     bool hasRedBrick = redBrickIntact.loadFromFile("red_brick.png");
     redBrickCracked.loadFromFile("red_brick_cracked.png");
-    sf::Texture grayBrick;
+    Texture grayBrick;
     bool hasGrayBrick = grayBrick.loadFromFile("gray_brick.png");
     bool hasBrickTextures = hasGreenBrick;
     if (!hasBrickTextures) {
-        std::cerr << "WARNING: Could not load brick textures - using fallback colors" << std::endl;
+        cerr << "WARNING: Could not load brick textures - using fallback colors" << endl;
     }
     // Load other textures
-    sf::Texture paddleTexture, ballTexture;
+    Texture paddleTexture, ballTexture;
     bool hasPaddleTexture = paddleTexture.loadFromFile("paddle.png");
     bool hasBallTexture = ballTexture.loadFromFile("ball.png");
-    sf::Texture heartTexture, starTexture;
+    Texture heartTexture, starTexture;
     bool hasHeartTexture = heartTexture.loadFromFile("heart.png");
     bool hasStarTexture = starTexture.loadFromFile("star.png");
     // Game state
@@ -129,14 +132,14 @@ int main() {
     bool enteringName = false;
     bool finishedNameInput = false;
     // Clock
-    sf::Clock clock;
+    Clock clock;
     // Game loop
     while (window.isOpen()) {
         float deltaTime = clock.restart().asSeconds();
         // Input handling
-        sf::Event event;
+        Event event;
         while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
+            if (event.type == Event::Closed) {
                 window.close();
             }
             if (gameState == STATE_MAIN_MENU) {
@@ -173,11 +176,11 @@ int main() {
                 }
             }
             else if (gameState == STATE_PLAYING) {
-                if (event.type == sf::Event::KeyPressed) {
-                    if (event.key.code == sf::Keyboard::Space) {
+                if (event.type == Event::KeyPressed) {
+                    if (event.key.code == Keyboard::Space) {
                         launchBall(ballVelX, ballVelY, ballLaunched, currentBallSpeed);
                     }
-                    else if (event.key.code == sf::Keyboard::Escape) {
+                    else if (event.key.code == Keyboard::Escape) {
                         gameState = STATE_PAUSED;
                         selectedPauseOption = 0;
                     }
@@ -221,8 +224,8 @@ int main() {
                         selectedMenuOption = 0;
                     }
                 }
-                else if (event.type == sf::Event::KeyPressed &&
-                    event.key.code == sf::Keyboard::Return) {
+                else if (event.type == Event::KeyPressed &&
+                    event.key.code == Keyboard::Return) {
                     bool isHighScore = false;
                     for (int i = 0; i < MAX_HIGH_SCORES; i++) {
                         if (score > highScores[i]) {
@@ -245,10 +248,10 @@ int main() {
         }
         // Game logic update
         if (gameState == STATE_PLAYING) {
-            bool leftPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ||
-                sf::Keyboard::isKeyPressed(sf::Keyboard::A);
-            bool rightPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ||
-                sf::Keyboard::isKeyPressed(sf::Keyboard::D);
+            bool leftPressed = Keyboard::isKeyPressed(Keyboard::Left) ||
+                Keyboard::isKeyPressed(Keyboard::A);
+            bool rightPressed = Keyboard::isKeyPressed(Keyboard::Right) ||
+                Keyboard::isKeyPressed(Keyboard::D);
             updatePaddlePosition(paddleX, leftPressed, rightPressed, deltaTime, currentPaddleWidth);
             updateBallPosition(ballX, ballY, ballVelX, ballVelY, deltaTime, ballLaunched, paddleX, currentPaddleWidth);
             if (ballLaunched) {
@@ -318,13 +321,13 @@ int main() {
         // Rendering
         if (gameState == STATE_MAIN_MENU || gameState == STATE_SETTINGS ||
             gameState == STATE_HIGH_SCORES || gameState == STATE_GAME_OVER) {
-            window.clear(sf::Color(10, 10, 30));
+            window.clear(Color(10, 10, 30));
             if (hasMenuBg) {
                 window.draw(menuBgSprite);
             }
         }
         else {
-            window.clear(sf::Color(10, 15, 40));
+            window.clear(Color(10, 15, 40));
             if (hasGameBg) {
                 window.draw(gameBgSprite);
             }
@@ -348,7 +351,7 @@ int main() {
 
             drawHUD(window, font, score, lives, level);
             if (gameState == STATE_PAUSED) {
-                drawPauseMenu(window, font, selectedPauseOption,menuFont ,hasMenuFont);
+                drawPauseMenu(window, font, selectedPauseOption, menuFont, hasMenuFont);
             }
         }
         else if (gameState == STATE_GAME_OVER) {

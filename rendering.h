@@ -53,15 +53,22 @@ void concatStrings(char dest[], const char src[]) {
     dest[destLen + i] = '\0';
 }
 
-void drawMainMenuSimple(sf::RenderWindow& window, sf::Font& font, int selectedOption) {
-    sf::Text title("BRICK BREAKER", font, 70);
+// Updated function with custom title font and menu font parameters
+void drawMainMenuSimple(sf::RenderWindow& window, sf::Font& font, int selectedOption,
+    sf::Font& titleFont, bool hasTitleFont, sf::Font& menuFont, bool hasMenuFont) {
+    // Use custom font if available, otherwise use default font
+    sf::Text title("BRICK BREAKER", hasTitleFont ? titleFont : font, 65);
     title.setStyle(sf::Text::Style::Bold);
     title.setFillColor(sf::Color(64, 224, 208));
-    title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 120);
+    // Add outline for more stylish look
+    title.setOutlineColor(sf::Color(0, 100, 100));
+    title.setOutlineThickness(3);
+    title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 80);
     window.draw(title);
     const char* options[] = { "Start New Game", "Load Game", "High Scores", "Settings", "Exit" };
     for (int i = 0; i < MENU_OPTIONS_COUNT; i++) {
-        sf::Text text(options[i], font, 35);
+        // Use custom menu font if available
+        sf::Text text(options[i], hasMenuFont ? menuFont : font, 23);
         if (i == selectedOption) {
             text.setFillColor(sf::Color(64, 224, 208));
             text.setStyle(sf::Text::Bold);
@@ -70,27 +77,30 @@ void drawMainMenuSimple(sf::RenderWindow& window, sf::Font& font, int selectedOp
         else {
             text.setFillColor(sf::Color::Black);
         }
-        text.setPosition(WINDOW_WIDTH / 2 - text.getGlobalBounds().width / 2, 320 + i * 60);
+        text.setPosition(WINDOW_WIDTH / 2 - text.getGlobalBounds().width / 2, 230 + i * 50);
         window.draw(text);
     }
-    sf::Text instructions("Use Arrow Keys to Navigate, Enter to Select", font, 18);
-    instructions.setFillColor(sf::Color(255, 255, 255));
-    instructions.setStyle(sf::Text::Style::Bold);
-    instructions.setPosition(WINDOW_WIDTH / 2 - instructions.getGlobalBounds().width / 2, 660);
+    // Use custom menu font for instructions too
+    sf::Text instructions("Use Arrow Keys to Navigate, Enter to Select", hasMenuFont ? menuFont : font, 16);
+    instructions.setFillColor(sf::Color(200, 200, 200));
+    instructions.setPosition(WINDOW_WIDTH / 2 - instructions.getGlobalBounds().width / 2, 550);
     window.draw(instructions);
 }
 
-void drawPauseMenu(sf::RenderWindow& window, sf::Font& font, int selectedOption) {
+void drawPauseMenu(sf::RenderWindow& window, sf::Font& font, int selectedOption,
+    sf::Font& menuFont, bool hasMenuFont) {
     sf::RectangleShape overlay(sf::Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT));
     overlay.setFillColor(sf::Color(0, 0, 0, 180));
     window.draw(overlay);
-    sf::Text title("PAUSED", font, 60);
+    // Use custom menu font for PAUSED title
+    sf::Text title("PAUSED", hasMenuFont ? menuFont : font, 50);
     title.setFillColor(sf::Color(64, 224, 208));
-    title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 200);
+    title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 150);
     window.draw(title);
     const char* options[] = { "Resume", "Save Game", "Main Menu" };
     for (int i = 0; i < PAUSE_OPTIONS_COUNT; i++) {
-        sf::Text text(options[i], font, 35);
+        // Use custom menu font for pause menu options
+        sf::Text text(options[i], hasMenuFont ? menuFont : font, 30);
         if (i == selectedOption) {
             text.setFillColor(sf::Color(64, 224, 208));
             text.setStyle(sf::Text::Bold);
@@ -98,7 +108,7 @@ void drawPauseMenu(sf::RenderWindow& window, sf::Font& font, int selectedOption)
         else {
             text.setFillColor(sf::Color::White);
         }
-        text.setPosition(WINDOW_WIDTH / 2 - text.getGlobalBounds().width / 2, 340 + i * 60);
+        text.setPosition(WINDOW_WIDTH / 2 - text.getGlobalBounds().width / 2, 270 + i * 50);
         window.draw(text);
     }
 }
@@ -264,62 +274,62 @@ void drawHUD(sf::RenderWindow& window, sf::Font& font, int score, int lives, int
     char scoreStr[20];
     intToString(score, scoreStr);
     concatStrings(buffer, scoreStr);
-    sf::Text scoreText(buffer, font, 24);
+    sf::Text scoreText(buffer, font, 20);
     scoreText.setFillColor(sf::Color::White);
     scoreText.setOutlineColor(sf::Color::Black);
     scoreText.setOutlineThickness(2);
-    scoreText.setPosition(15, 15);
+    scoreText.setPosition(10, 10);
     window.draw(scoreText);
     safeStringCopy(buffer, "Lives: ");
     char livesStr[20];
     intToString(lives, livesStr);
     concatStrings(buffer, livesStr);
-    sf::Text livesText(buffer, font, 24);
+    sf::Text livesText(buffer, font, 20);
     livesText.setFillColor(sf::Color::White);
     livesText.setOutlineColor(sf::Color::Black);
     livesText.setOutlineThickness(2);
-    livesText.setPosition(WINDOW_WIDTH - 130, 15);
+    livesText.setPosition(WINDOW_WIDTH - 100, 10);
     window.draw(livesText);
     safeStringCopy(buffer, "Level: ");
     char levelStr[20];
     intToString(level, levelStr);
     concatStrings(buffer, levelStr);
-    sf::Text levelText(buffer, font, 24);
+    sf::Text levelText(buffer, font, 20);
     levelText.setFillColor(sf::Color::White);
     levelText.setOutlineColor(sf::Color::Black);
     levelText.setOutlineThickness(2);
-    levelText.setPosition(WINDOW_WIDTH / 2 - 45, 15);
+    levelText.setPosition(WINDOW_WIDTH / 2 - 40, 10);
     window.draw(levelText);
 }
 
 void drawGameOver(sf::RenderWindow& window, sf::Font& font, int score) {
     window.clear(sf::Color(20, 20, 40));
-    sf::Text title("GAME OVER", font, 70);
+    sf::Text title("GAME OVER", font, 60);
     title.setFillColor(sf::Color::Red);
     title.setOutlineColor(sf::Color(100, 0, 0));
     title.setOutlineThickness(3);
-    title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 250);
+    title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 180);
     window.draw(title);
     char buffer[100];
     safeStringCopy(buffer, "Final Score: ");
     char scoreStr[20];
     intToString(score, scoreStr);
     concatStrings(buffer, scoreStr);
-    sf::Text scoreText(buffer, font, 35);
+    sf::Text scoreText(buffer, font, 32);
     scoreText.setFillColor(sf::Color::White);
-    scoreText.setPosition(WINDOW_WIDTH / 2 - scoreText.getGlobalBounds().width / 2, 370);
+    scoreText.setPosition(WINDOW_WIDTH / 2 - scoreText.getGlobalBounds().width / 2, 280);
     window.draw(scoreText);
-    sf::Text instruction("Press Enter to Continue", font, 22);
+    sf::Text instruction("Press Enter to Continue", font, 20);
     instruction.setFillColor(sf::Color(150, 150, 150));
-    instruction.setPosition(WINDOW_WIDTH / 2 - instruction.getGlobalBounds().width / 2, 480);
+    instruction.setPosition(WINDOW_WIDTH / 2 - instruction.getGlobalBounds().width / 2, 370);
     window.draw(instruction);
 }
 
 void drawSettings(sf::RenderWindow& window, sf::Font& font, int difficulty) {
     window.clear(sf::Color(20, 20, 40));
-    sf::Text title("SETTINGS", font, 60);
+    sf::Text title("SETTINGS", font, 50);
     title.setFillColor(sf::Color(64, 224, 208));
-    title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 150);
+    title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 100);
     window.draw(title);
     char buffer[100];
     safeStringCopy(buffer, "Difficulty: ");
@@ -331,21 +341,21 @@ void drawSettings(sf::RenderWindow& window, sf::Font& font, int difficulty) {
     else if (difficulty == 2) diffName = " (Normal)";
     else if (difficulty == 3) diffName = " (Hard)";
     concatStrings(buffer, diffName);
-    sf::Text diffText(buffer, font, 35);
+    sf::Text diffText(buffer, font, 30);
     diffText.setFillColor(sf::Color::White);
-    diffText.setPosition(WINDOW_WIDTH / 2 - diffText.getGlobalBounds().width / 2, 320);
+    diffText.setPosition(WINDOW_WIDTH / 2 - diffText.getGlobalBounds().width / 2, 250);
     window.draw(diffText);
-    sf::Text instructions("Use UP/DOWN to Adjust, ESC to Exit", font, 20);
+    sf::Text instructions("Use UP/DOWN to Adjust, ESC to Exit", font, 18);
     instructions.setFillColor(sf::Color(150, 150, 150));
-    instructions.setPosition(WINDOW_WIDTH / 2 - instructions.getGlobalBounds().width / 2, 600);
+    instructions.setPosition(WINDOW_WIDTH / 2 - instructions.getGlobalBounds().width / 2, 480);
     window.draw(instructions);
 }
 
 void drawHighScores(sf::RenderWindow& window, sf::Font& font, int scores[], char names[][MAX_NAME_LENGTH]) {
     window.clear(sf::Color(20, 20, 40));
-    sf::Text title("HIGH SCORES", font, 60);
+    sf::Text title("HIGH SCORES", font, 48);
     title.setFillColor(sf::Color::Yellow);
-    title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 80);
+    title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 50);
     window.draw(title);
     for (int i = 0; i < MAX_HIGH_SCORES; i++) {
         char buffer[200];
@@ -356,19 +366,19 @@ void drawHighScores(sf::RenderWindow& window, sf::Font& font, int scores[], char
         concatStrings(buffer, ". ");
         concatStrings(buffer, names[i]);
         int nameLen = strlen(names[i]);
-        for (int j = nameLen; j < 25; j++) {
+        for (int j = nameLen; j < 20; j++) {
             concatStrings(buffer, " ");
         }
         intToString(scores[i], scoreStr);
         concatStrings(buffer, scoreStr);
-        sf::Text scoreText(buffer, font, 28);
+        sf::Text scoreText(buffer, font, 22);
         scoreText.setFillColor(sf::Color::White);
-        scoreText.setPosition(280, 200 + i * 42);
+        scoreText.setPosition(180, 140 + i * 36);
         window.draw(scoreText);
     }
-    sf::Text instruction("Press Enter or ESC to Return", font, 20);
+    sf::Text instruction("Press Enter or ESC to Return", font, 18);
     instruction.setFillColor(sf::Color(150, 150, 150));
-    instruction.setPosition(WINDOW_WIDTH / 2 - instruction.getGlobalBounds().width / 2, 660);
+    instruction.setPosition(WINDOW_WIDTH / 2 - instruction.getGlobalBounds().width / 2, 550);
     window.draw(instruction);
 }
 
@@ -376,21 +386,21 @@ void drawNameInput(sf::RenderWindow& window, sf::Font& font, char playerName[]) 
     sf::RectangleShape overlay(sf::Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT));
     overlay.setFillColor(sf::Color(0, 0, 0, 180));
     window.draw(overlay);
-    sf::Text prompt("Enter Your Name:", font, 45);
+    sf::Text prompt("Enter Your Name:", font, 38);
     prompt.setFillColor(sf::Color::Yellow);
-    prompt.setPosition(WINDOW_WIDTH / 2 - prompt.getGlobalBounds().width / 2, 260);
+    prompt.setPosition(WINDOW_WIDTH / 2 - prompt.getGlobalBounds().width / 2, 200);
     window.draw(prompt);
-    sf::Text nameText(playerName, font, 40);
+    sf::Text nameText(playerName, font, 35);
     nameText.setFillColor(sf::Color::White);
-    nameText.setPosition(WINDOW_WIDTH / 2 - nameText.getGlobalBounds().width / 2, 350);
+    nameText.setPosition(WINDOW_WIDTH / 2 - nameText.getGlobalBounds().width / 2, 280);
     window.draw(nameText);
-    sf::RectangleShape cursor(sf::Vector2f(3, 40));
-    cursor.setPosition(WINDOW_WIDTH / 2 + nameText.getGlobalBounds().width / 2 + 8, 350);
+    sf::RectangleShape cursor(sf::Vector2f(3, 35));
+    cursor.setPosition(WINDOW_WIDTH / 2 + nameText.getGlobalBounds().width / 2 + 8, 280);
     cursor.setFillColor(sf::Color::White);
     window.draw(cursor);
-    sf::Text instruction("Press Enter when done", font, 22);
+    sf::Text instruction("Press Enter when done", font, 20);
     instruction.setFillColor(sf::Color(150, 150, 150));
-    instruction.setPosition(WINDOW_WIDTH / 2 - instruction.getGlobalBounds().width / 2, 440);
+    instruction.setPosition(WINDOW_WIDTH / 2 - instruction.getGlobalBounds().width / 2, 360);
     window.draw(instruction);
 }
 #endif

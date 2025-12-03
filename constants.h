@@ -1,30 +1,30 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 // Window settings
-const int WINDOW_WIDTH = 1280;
-const int WINDOW_HEIGHT = 720;
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGHT = 600;
 const char WINDOW_TITLE[] = "Brick Breaker Game";
 // Paddle settings
-const float PADDLE_WIDTH = 120.0f;
+const float PADDLE_WIDTH = 100.0f;
 const float PADDLE_HEIGHT = 20.0f;
 const float PADDLE_SPEED = 500.0f;
-const float PADDLE_Y = 670.0f;
+const float PADDLE_Y = 550.0f;
 // Ball settings
-const float BALL_RADIUS = 10.0f;
+const float BALL_RADIUS = 8.0f;
 const float BALL_SPEED = 350.0f;
 const float BALL_SPEED_INCREMENT = 50.0f;
 // Brick settings
-const int GRID_WIDTH = 12;
+const int GRID_WIDTH = 10;
 const int GRID_HEIGHT = 8;
 const int TOTAL_BRICKS = GRID_WIDTH * GRID_HEIGHT;
-const float BRICK_WIDTH = 100.0f;
-const float BRICK_HEIGHT = 30.0f;
+const float BRICK_WIDTH = 75.0f;
+const float BRICK_HEIGHT = 25.0f;
 const float BRICK_OFFSET_X = 10.0f;
-const float BRICK_OFFSET_Y = 80.0f;
-const float BRICK_SPACING = 5.0f;
+const float BRICK_OFFSET_Y = 60.0f;
+const float BRICK_SPACING = 3.0f;
 // Power-up settings
 const int MAX_POWERUPS = 10;
-const float POWERUP_SIZE = 25.0f;
+const float POWERUP_SIZE = 20.0f;
 const float POWERUP_FALL_SPEED = 120.0f;
 const int POWERUP_CHANCE = 20;
 // Particle settings

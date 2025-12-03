@@ -2,6 +2,9 @@
 #define FILE_OPERATIONS_H
 #include <fstream>
 #include "constants.h"
+
+using namespace std;
+
 void copyString(char dest[], const char src[], int maxLength) {
     int i = 0;
     while (i < maxLength - 1 && src[i] != '\0') {
@@ -14,7 +17,7 @@ void copyString(char dest[], const char src[], int maxLength) {
 bool saveGameState(const char filename[], int level, int score, int lives,
     float ballX, float ballY, float ballVelX, float ballVelY,
     float paddleX, int bricks[], bool ballLaunched) {
-    std::ofstream file(filename);
+    ofstream file(filename);
     if (!file.is_open()) {
         return false;
     }
@@ -37,7 +40,7 @@ bool saveGameState(const char filename[], int level, int score, int lives,
 bool loadGameState(const char filename[], int& level, int& score, int& lives,
     float& ballX, float& ballY, float& ballVelX, float& ballVelY,
     float& paddleX, int bricks[], bool& ballLaunched) {
-    std::ifstream file(filename);
+    ifstream file(filename);
     if (!file.is_open()) {
         return false;
     }
@@ -77,7 +80,7 @@ void saveHighScore(const char filename[], int newScore, const char playerName[],
         copyString(names[insertPos], playerName, MAX_NAME_LENGTH);
     }
     // Save to file
-    std::ofstream file(filename);
+    ofstream file(filename);
     if (file.is_open()) {
         for (int i = 0; i < MAX_HIGH_SCORES; i++) {
             file << scores[i] << "\n";
@@ -88,7 +91,7 @@ void saveHighScore(const char filename[], int newScore, const char playerName[],
 }
 // Load high scores
 void loadHighScores(const char filename[], int scores[], char names[][MAX_NAME_LENGTH]) {
-    std::ifstream file(filename);
+    ifstream file(filename);
     if (file.is_open()) {
         for (int i = 0; i < MAX_HIGH_SCORES; i++) {
             file >> scores[i];
@@ -107,7 +110,7 @@ void loadHighScores(const char filename[], int scores[], char names[][MAX_NAME_L
 }
 // Save settings 
 void saveSettings(const char filename[], int difficulty) {
-    std::ofstream file(filename);
+    ofstream file(filename);
     if (file.is_open()) {
         file << difficulty << "\n";
         file.close();
@@ -115,7 +118,7 @@ void saveSettings(const char filename[], int difficulty) {
 }
 // Load settings 
 void loadSettings(const char filename[], int& difficulty) {
-    std::ifstream file(filename);
+    ifstream file(filename);
     if (file.is_open()) {
         file >> difficulty;
         file.close();

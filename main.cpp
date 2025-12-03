@@ -21,6 +21,20 @@ int main() {
         std::cerr << "ERROR: Failed to load font. Exiting." << std::endl;
         return -1;
     }
+
+    // Load custom title font
+    sf::Font titleFont;
+    bool hasTitleFont = titleFont.loadFromFile("GameFont.ttf");  // Replace with your font filename
+    if (!hasTitleFont) {
+        std::cerr << "WARNING: Could not load custom title font, using default" << std::endl;
+    }
+
+    // Load custom menu font
+    sf::Font menuFont;
+    bool hasMenuFont = menuFont.loadFromFile("MenuFont.ttf");  // Replace with your menu font filename
+    if (!hasMenuFont) {
+        std::cerr << "WARNING: Could not load custom menu font, using default" << std::endl;
+    }
     // Load background images
     sf::Texture menuBackground, gameBackground;
     sf::Sprite menuBgSprite, gameBgSprite;
@@ -316,7 +330,7 @@ int main() {
             }
         }
         if (gameState == STATE_MAIN_MENU) {
-            drawMainMenuSimple(window, font, selectedMenuOption);
+            drawMainMenuSimple(window, font, selectedMenuOption, titleFont, hasTitleFont, menuFont, hasMenuFont);
         }
         else if (gameState == STATE_PLAYING || gameState == STATE_PAUSED) {
             drawBricksWithTypes(window, bricks, brickTypes,
@@ -334,7 +348,7 @@ int main() {
 
             drawHUD(window, font, score, lives, level);
             if (gameState == STATE_PAUSED) {
-                drawPauseMenu(window, font, selectedPauseOption);
+                drawPauseMenu(window, font, selectedPauseOption,menuFont ,hasMenuFont);
             }
         }
         else if (gameState == STATE_GAME_OVER) {

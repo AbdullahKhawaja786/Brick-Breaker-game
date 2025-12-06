@@ -513,7 +513,7 @@ int main() {
                 particleLife, particleActive, deltaTime);
 
             int hitPowerUp = checkPowerUpCollision(paddleX, PADDLE_Y, currentPaddleWidth,
-                PADDLE_HEIGHT, powerUpX, powerUpY, powerUpActive);
+                PADDLE_HEIGHT, powerUpX, powerUpY, powerUpActive, powerUpType);
             if (hitPowerUp != -1) {
                 int powerUpTypeCollected = powerUpType[hitPowerUp];
                 applyPowerUp(powerUpTypeCollected, lives, currentPaddleWidth, ballSpeedMultiplier,

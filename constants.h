@@ -29,7 +29,8 @@ const float BRICK_SPACING = 3.0f;
 
 // Power-up settings
 const int MAX_POWERUPS = 10;
-const float POWERUP_SIZE = 20.0f;
+const float POWERUP_SIZE = 30.0f;
+const float POWERUP_COIN_SIZE = 60.0f;
 const float POWERUP_FALL_SPEED = 120.0f;
 const int POWERUP_CHANCE = 20;
 const float POWERUP_DURATION = 10.0f;

@@ -56,7 +56,6 @@ void concatStrings(char dest[], const char src[]) {
     dest[destLen + i] = '\0';
 }
 
-// Updated function with custom title font and menu font parameters
 void drawMainMenuSimple(RenderWindow& window, Font& font, int selectedOption,
     Font& titleFont, bool hasTitleFont, Font& menuFont, bool hasMenuFont) {
     // Use custom font if available, otherwise use default font
@@ -66,7 +65,8 @@ void drawMainMenuSimple(RenderWindow& window, Font& font, int selectedOption,
     // Add outline for more stylish look
     title.setOutlineColor(Color(0, 100, 100));
     title.setOutlineThickness(3);
-    title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 80);
+    FloatRect titleBounds = title.getGlobalBounds();
+    title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 80);
     window.draw(title);
     const char* options[] = { "Start New Game", "Load Game", "High Scores", "Settings", "Exit" };
     for (int i = 0; i < MENU_OPTIONS_COUNT; i++) {
@@ -80,13 +80,15 @@ void drawMainMenuSimple(RenderWindow& window, Font& font, int selectedOption,
         else {
             text.setFillColor(Color::Black);
         }
-        text.setPosition(WINDOW_WIDTH / 2 - text.getGlobalBounds().width / 2, 230 + i * 50);
+        FloatRect textBounds = text.getGlobalBounds();
+        text.setPosition(WINDOW_WIDTH / 2.0f - textBounds.width / 2.0f, 230.0f + i * 50.0f);
         window.draw(text);
     }
     // Use custom menu font for instructions too
     Text instructions("Use Arrow Keys to Navigate, Enter to Select", hasMenuFont ? menuFont : font, 16);
     instructions.setFillColor(Color(200, 200, 200));
-    instructions.setPosition(WINDOW_WIDTH / 2 - instructions.getGlobalBounds().width / 2, 550);
+    FloatRect instrBounds = instructions.getGlobalBounds();
+    instructions.setPosition(WINDOW_WIDTH / 2.0f - instrBounds.width / 2.0f, 550);
     window.draw(instructions);
 }
 
@@ -98,12 +100,13 @@ void drawPauseMenu(RenderWindow& window, Font& font, int selectedOption,
     // Use custom menu font for PAUSED title
     Text title("PAUSED", hasMenuFont ? menuFont : font, 50);
     title.setFillColor(Color(64, 224, 208));
-    title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 150);
+    FloatRect titleBounds = title.getGlobalBounds();
+    title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 150);
     window.draw(title);
     const char* options[] = { "Resume", "Save Game", "Main Menu" };
     for (int i = 0; i < PAUSE_OPTIONS_COUNT; i++) {
         // Use custom menu font for pause menu options
-        Text text(options[i], hasMenuFont ? menuFont : font, 30);
+        Text text(options[i], hasMenuFont ? menuFont : font, 23);
         if (i == selectedOption) {
             text.setFillColor(Color(64, 224, 208));
             text.setStyle(Text::Bold);
@@ -111,7 +114,8 @@ void drawPauseMenu(RenderWindow& window, Font& font, int selectedOption,
         else {
             text.setFillColor(Color::White);
         }
-        text.setPosition(WINDOW_WIDTH / 2 - text.getGlobalBounds().width / 2, 270 + i * 50);
+        FloatRect textBounds = text.getGlobalBounds();
+        text.setPosition(WINDOW_WIDTH / 2.0f - textBounds.width / 2.0f, 270.0f + i * 50.0f);
         window.draw(text);
     }
 }
@@ -220,9 +224,10 @@ void drawBall(RenderWindow& window, float ballX, float ballY,
     }
 }
 
+// Updated to include BONUS_SCORE (yellow/gold color and coin texture)
 void drawPowerUpsSimple(RenderWindow& window, float powerUpX[], float powerUpY[],
     int powerUpType[], bool powerUpActive[],
-    Texture& heartTex, Texture& starTex, bool hasTextures) {
+    Texture& heartTex, Texture& starTex, Texture& skullTex, Texture& coinTex, bool hasTextures) {
     for (int i = 0; i < MAX_POWERUPS; i++) {
         if (!powerUpActive[i]) continue;
         if (hasTextures) {
@@ -230,8 +235,14 @@ void drawPowerUpsSimple(RenderWindow& window, float powerUpX[], float powerUpY[]
             if (powerUpType[i] == POWERUP_EXTRA_LIFE) {
                 powerUpSprite.setTexture(heartTex);
             }
-            else {
+            else if (powerUpType[i] == POWERUP_LARGER_PADDLE) {
                 powerUpSprite.setTexture(starTex);
+            }
+            else if (powerUpType[i] == POWERUP_SMALLER_PADDLE) {
+                powerUpSprite.setTexture(skullTex);
+            }
+            else if (powerUpType[i] == POWERUP_BONUS_SCORE) {
+                powerUpSprite.setTexture(coinTex);
             }
             float scale = POWERUP_SIZE / powerUpSprite.getLocalBounds().width;
             powerUpSprite.setScale(scale, scale);
@@ -241,17 +252,18 @@ void drawPowerUpsSimple(RenderWindow& window, float powerUpX[], float powerUpY[]
         else {
             RectangleShape powerUp(Vector2f(POWERUP_SIZE, POWERUP_SIZE));
             powerUp.setPosition(powerUpX[i], powerUpY[i]);
-            if (powerUpType[i] == POWERUP_MULTIBALL) {
-                powerUp.setFillColor(Color::Blue);
-            }
-            else if (powerUpType[i] == POWERUP_LARGER_PADDLE) {
+            // 4 power-up types: LARGER_PADDLE (green), EXTRA_LIFE (red), SMALLER_PADDLE (dark gray), BONUS_SCORE (yellow)
+            if (powerUpType[i] == POWERUP_LARGER_PADDLE) {
                 powerUp.setFillColor(Color::Green);
-            }
-            else if (powerUpType[i] == POWERUP_SLOWER_BALL) {
-                powerUp.setFillColor(Color::Yellow);
             }
             else if (powerUpType[i] == POWERUP_EXTRA_LIFE) {
                 powerUp.setFillColor(Color::Red);
+            }
+            else if (powerUpType[i] == POWERUP_SMALLER_PADDLE) {
+                powerUp.setFillColor(Color(50, 50, 50)); // Dark gray for bad power-up
+            }
+            else if (powerUpType[i] == POWERUP_BONUS_SCORE) {
+                powerUp.setFillColor(Color(255, 215, 0)); // Gold/yellow for bonus score
             }
             powerUp.setOutlineColor(Color::White);
             powerUp.setOutlineThickness(1);
@@ -311,7 +323,8 @@ void drawGameOver(RenderWindow& window, Font& font, int score) {
     title.setFillColor(Color::Red);
     title.setOutlineColor(Color(100, 0, 0));
     title.setOutlineThickness(3);
-    title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 180);
+    FloatRect titleBounds = title.getGlobalBounds();
+    title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 180);
     window.draw(title);
     char buffer[100];
     safeStringCopy(buffer, "Final Score: ");
@@ -320,20 +333,25 @@ void drawGameOver(RenderWindow& window, Font& font, int score) {
     concatStrings(buffer, scoreStr);
     Text scoreText(buffer, font, 32);
     scoreText.setFillColor(Color::White);
-    scoreText.setPosition(WINDOW_WIDTH / 2 - scoreText.getGlobalBounds().width / 2, 280);
+    FloatRect scoreBounds = scoreText.getGlobalBounds();
+    scoreText.setPosition(WINDOW_WIDTH / 2.0f - scoreBounds.width / 2.0f, 280);
     window.draw(scoreText);
     Text instruction("Press Enter to Continue", font, 20);
     instruction.setFillColor(Color(150, 150, 150));
-    instruction.setPosition(WINDOW_WIDTH / 2 - instruction.getGlobalBounds().width / 2, 370);
+    FloatRect instrBounds = instruction.getGlobalBounds();
+    instruction.setPosition(WINDOW_WIDTH / 2.0f - instrBounds.width / 2.0f, 370);
     window.draw(instruction);
 }
 
-void drawSettings(RenderWindow& window, Font& font, int difficulty) {
+void drawSettings(RenderWindow& window, Font& font, int difficulty, int musicVolume, int gameVolume, int selectedSetting) {
     window.clear(Color(20, 20, 40));
     Text title("SETTINGS", font, 50);
     title.setFillColor(Color(64, 224, 208));
-    title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 100);
+    FloatRect titleBounds = title.getGlobalBounds();
+    title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 60);
     window.draw(title);
+
+    // Difficulty setting
     char buffer[100];
     safeStringCopy(buffer, "Difficulty: ");
     char diffStr[20];
@@ -344,21 +362,115 @@ void drawSettings(RenderWindow& window, Font& font, int difficulty) {
     else if (difficulty == 2) diffName = " (Normal)";
     else if (difficulty == 3) diffName = " (Hard)";
     concatStrings(buffer, diffName);
-    Text diffText(buffer, font, 30);
-    diffText.setFillColor(Color::White);
-    diffText.setPosition(WINDOW_WIDTH / 2 - diffText.getGlobalBounds().width / 2, 250);
+    Text diffText(buffer, font, 26);
+    if (selectedSetting == 0) {
+        diffText.setFillColor(Color(64, 224, 208));
+        diffText.setStyle(Text::Bold);
+    }
+    else {
+        diffText.setFillColor(Color::White);
+    }
+    FloatRect diffBounds = diffText.getGlobalBounds();
+    diffText.setPosition(WINDOW_WIDTH / 2.0f - diffBounds.width / 2.0f, 160);
     window.draw(diffText);
-    Text instructions("Use UP/DOWN to Adjust, ESC to Exit", font, 18);
-    instructions.setFillColor(Color(150, 150, 150));
-    instructions.setPosition(WINDOW_WIDTH / 2 - instructions.getGlobalBounds().width / 2, 480);
-    window.draw(instructions);
+
+    // Music volume setting
+    safeStringCopy(buffer, "Music Volume: ");
+    char volStr[20];
+    intToString(musicVolume, volStr);
+    concatStrings(buffer, volStr);
+    concatStrings(buffer, "%");
+    Text musicVolumeText(buffer, font, 26);
+    if (selectedSetting == 1) {
+        musicVolumeText.setFillColor(Color(64, 224, 208));
+        musicVolumeText.setStyle(Text::Bold);
+    }
+    else {
+        musicVolumeText.setFillColor(Color::White);
+    }
+    FloatRect musicBounds = musicVolumeText.getGlobalBounds();
+    musicVolumeText.setPosition(WINDOW_WIDTH / 2.0f - musicBounds.width / 2.0f, 240);
+    window.draw(musicVolumeText);
+
+    // Music volume bar
+    float barWidth = 300.0f;
+    float barHeight = 18.0f;
+    float barX = WINDOW_WIDTH / 2.0f - barWidth / 2.0f;
+    float barY = 275;
+
+    RectangleShape musicBarBg(Vector2f(barWidth, barHeight));
+    musicBarBg.setPosition(barX, barY);
+    musicBarBg.setFillColor(Color(50, 50, 50));
+    musicBarBg.setOutlineColor(selectedSetting == 1 ? Color(64, 224, 208) : Color::White);
+    musicBarBg.setOutlineThickness(2);
+    window.draw(musicBarBg);
+
+    float musicFillWidth = (barWidth * musicVolume) / 100.0f;
+    RectangleShape musicBarFill(Vector2f(musicFillWidth, barHeight));
+    musicBarFill.setPosition(barX, barY);
+    musicBarFill.setFillColor(Color(64, 224, 208));
+    window.draw(musicBarFill);
+
+    // Game volume setting
+    safeStringCopy(buffer, "Game Volume: ");
+    char gameVolStr[20];
+    intToString(gameVolume, gameVolStr);
+    concatStrings(buffer, gameVolStr);
+    concatStrings(buffer, "%");
+    Text gameVolumeText(buffer, font, 26);
+    if (selectedSetting == 2) {
+        gameVolumeText.setFillColor(Color(64, 224, 208));
+        gameVolumeText.setStyle(Text::Bold);
+    }
+    else {
+        gameVolumeText.setFillColor(Color::White);
+    }
+    FloatRect gameBounds = gameVolumeText.getGlobalBounds();
+    gameVolumeText.setPosition(WINDOW_WIDTH / 2.0f - gameBounds.width / 2.0f, 330);
+    window.draw(gameVolumeText);
+
+    // Game volume bar
+    float gameBarY = 365;
+
+    RectangleShape gameBarBg(Vector2f(barWidth, barHeight));
+    gameBarBg.setPosition(barX, gameBarY);
+    gameBarBg.setFillColor(Color(50, 50, 50));
+    gameBarBg.setOutlineColor(selectedSetting == 2 ? Color(64, 224, 208) : Color::White);
+    gameBarBg.setOutlineThickness(2);
+    window.draw(gameBarBg);
+
+    float gameFillWidth = (barWidth * gameVolume) / 100.0f;
+    RectangleShape gameBarFill(Vector2f(gameFillWidth, barHeight));
+    gameBarFill.setPosition(barX, gameBarY);
+    gameBarFill.setFillColor(Color(255, 165, 0));  // Orange color for game sounds
+    window.draw(gameBarFill);
+
+    // Instructions
+    Text navInstruct("UP/DOWN: Select Setting", font, 16);
+    navInstruct.setFillColor(Color(150, 150, 150));
+    FloatRect navBounds = navInstruct.getGlobalBounds();
+    navInstruct.setPosition(WINDOW_WIDTH / 2.0f - navBounds.width / 2.0f, 450);
+    window.draw(navInstruct);
+
+    Text adjustInstruct("LEFT/RIGHT: Adjust Value", font, 16);
+    adjustInstruct.setFillColor(Color(150, 150, 150));
+    FloatRect adjustBounds = adjustInstruct.getGlobalBounds();
+    adjustInstruct.setPosition(WINDOW_WIDTH / 2.0f - adjustBounds.width / 2.0f, 475);
+    window.draw(adjustInstruct);
+
+    Text exitInstruct("ENTER/ESC: Save and Exit", font, 16);
+    exitInstruct.setFillColor(Color(150, 150, 150));
+    FloatRect exitBounds = exitInstruct.getGlobalBounds();
+    exitInstruct.setPosition(WINDOW_WIDTH / 2.0f - exitBounds.width / 2.0f, 500);
+    window.draw(exitInstruct);
 }
 
 void drawHighScores(RenderWindow& window, Font& font, int scores[], char names[][MAX_NAME_LENGTH]) {
     window.clear(Color(20, 20, 40));
     Text title("HIGH SCORES", font, 48);
     title.setFillColor(Color::Yellow);
-    title.setPosition(WINDOW_WIDTH / 2 - title.getGlobalBounds().width / 2, 50);
+    FloatRect titleBounds = title.getGlobalBounds();
+    title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 50);
     window.draw(title);
     for (int i = 0; i < MAX_HIGH_SCORES; i++) {
         char buffer[200];
@@ -376,12 +488,13 @@ void drawHighScores(RenderWindow& window, Font& font, int scores[], char names[]
         concatStrings(buffer, scoreStr);
         Text scoreText(buffer, font, 22);
         scoreText.setFillColor(Color::White);
-        scoreText.setPosition(180, 140 + i * 36);
+        scoreText.setPosition(180, 140.0f + i * 36.0f);
         window.draw(scoreText);
     }
     Text instruction("Press Enter or ESC to Return", font, 18);
     instruction.setFillColor(Color(150, 150, 150));
-    instruction.setPosition(WINDOW_WIDTH / 2 - instruction.getGlobalBounds().width / 2, 550);
+    FloatRect instrBounds = instruction.getGlobalBounds();
+    instruction.setPosition(WINDOW_WIDTH / 2.0f - instrBounds.width / 2.0f, 550);
     window.draw(instruction);
 }
 
@@ -391,19 +504,23 @@ void drawNameInput(RenderWindow& window, Font& font, char playerName[]) {
     window.draw(overlay);
     Text prompt("Enter Your Name:", font, 38);
     prompt.setFillColor(Color::Yellow);
-    prompt.setPosition(WINDOW_WIDTH / 2 - prompt.getGlobalBounds().width / 2, 200);
+    FloatRect promptBounds = prompt.getGlobalBounds();
+    prompt.setPosition(WINDOW_WIDTH / 2.0f - promptBounds.width / 2.0f, 200);
     window.draw(prompt);
     Text nameText(playerName, font, 35);
     nameText.setFillColor(Color::White);
-    nameText.setPosition(WINDOW_WIDTH / 2 - nameText.getGlobalBounds().width / 2, 280);
+    FloatRect nameBounds = nameText.getGlobalBounds();
+    nameText.setPosition(WINDOW_WIDTH / 2.0f - nameBounds.width / 2.0f, 280);
     window.draw(nameText);
     RectangleShape cursor(Vector2f(3, 35));
-    cursor.setPosition(WINDOW_WIDTH / 2 + nameText.getGlobalBounds().width / 2 + 8, 280);
+    cursor.setPosition(WINDOW_WIDTH / 2.0f + nameBounds.width / 2.0f + 8, 280);
     cursor.setFillColor(Color::White);
     window.draw(cursor);
     Text instruction("Press Enter when done", font, 20);
     instruction.setFillColor(Color(150, 150, 150));
-    instruction.setPosition(WINDOW_WIDTH / 2 - instruction.getGlobalBounds().width / 2, 360);
+    FloatRect instrBounds = instruction.getGlobalBounds();
+    instruction.setPosition(WINDOW_WIDTH / 2.0f - instrBounds.width / 2.0f, 360);
     window.draw(instruction);
 }
+
 #endif

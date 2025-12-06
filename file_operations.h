@@ -13,6 +13,7 @@ void copyString(char dest[], const char src[], int maxLength) {
     }
     dest[i] = '\0';
 }
+
 // Save game state to file
 bool saveGameState(const char filename[], int level, int score, int lives,
     float ballX, float ballY, float ballVelX, float ballVelY,
@@ -36,6 +37,7 @@ bool saveGameState(const char filename[], int level, int score, int lives,
     file.close();
     return true;
 }
+
 // Load game state from file
 bool loadGameState(const char filename[], int& level, int& score, int& lives,
     float& ballX, float& ballY, float& ballVelX, float& ballVelY,
@@ -59,6 +61,7 @@ bool loadGameState(const char filename[], int& level, int& score, int& lives,
     file.close();
     return true;
 }
+
 // Save high score
 void saveHighScore(const char filename[], int newScore, const char playerName[],
     int scores[], char names[][MAX_NAME_LENGTH]) {
@@ -89,6 +92,7 @@ void saveHighScore(const char filename[], int newScore, const char playerName[],
         file.close();
     }
 }
+
 // Load high scores
 void loadHighScores(const char filename[], int scores[], char names[][MAX_NAME_LENGTH]) {
     ifstream file(filename);
@@ -108,23 +112,43 @@ void loadHighScores(const char filename[], int scores[], char names[][MAX_NAME_L
         }
     }
 }
-// Save settings 
-void saveSettings(const char filename[], int difficulty) {
+
+// Save settings with music volume and game volume
+void saveSettings(const char filename[], int difficulty, int musicVolume, int gameVolume) {
     ofstream file(filename);
     if (file.is_open()) {
         file << difficulty << "\n";
+        file << musicVolume << "\n";
+        file << gameVolume << "\n";
         file.close();
     }
 }
-// Load settings 
-void loadSettings(const char filename[], int& difficulty) {
+
+// Load settings with music volume and game volume
+void loadSettings(const char filename[], int& difficulty, int& musicVolume, int& gameVolume) {
     ifstream file(filename);
     if (file.is_open()) {
         file >> difficulty;
+        if (file >> musicVolume) {
+            // Successfully read music volume
+            if (file >> gameVolume) {
+                // Successfully read game volume
+            }
+            else {
+                gameVolume = DEFAULT_GAME_VOLUME;
+            }
+        }
+        else {
+            musicVolume = DEFAULT_MUSIC_VOLUME;
+            gameVolume = DEFAULT_GAME_VOLUME;
+        }
         file.close();
     }
     else {
         difficulty = 1;
+        musicVolume = DEFAULT_MUSIC_VOLUME;
+        gameVolume = DEFAULT_GAME_VOLUME;
     }
 }
+
 #endif

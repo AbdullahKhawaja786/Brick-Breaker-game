@@ -23,6 +23,7 @@ int handleMainMenuInput(Event& event, int& selectedOption) {
     }
     return -1;
 }
+
 // Handle pause menu input
 int handlePauseMenuInput(Event& event, int& selectedOption) {
     if (event.type == Event::KeyPressed) {
@@ -40,16 +41,58 @@ int handlePauseMenuInput(Event& event, int& selectedOption) {
     }
     return -1;
 }
-// Handle settings input - VOLUME REMOVED, LEFT/RIGHT KEYS REMOVED
-void handleSettingsInput(Event& event, int& difficulty, bool& exitSettings) {
+
+// Handle settings input with music volume and game volume control
+void handleSettingsInput(Event& event, int& difficulty, int& musicVolume, int& gameVolume,
+    int& selectedSetting, bool& exitSettings, bool& volumeChanged) {
+    volumeChanged = false;
+
     if (event.type == Event::KeyPressed) {
         if (event.key.code == Keyboard::Up) {
-            difficulty--;
-            if (difficulty < 1) difficulty = 1;
+            selectedSetting--;
+            if (selectedSetting < 0) selectedSetting = 2; // 0=difficulty, 1=music, 2=game volume
         }
         else if (event.key.code == Keyboard::Down) {
-            difficulty++;
-            if (difficulty > 3) difficulty = 3;
+            selectedSetting++;
+            if (selectedSetting > 2) selectedSetting = 0;
+        }
+        else if (event.key.code == Keyboard::Left) {
+            if (selectedSetting == 0) {
+                // Difficulty
+                difficulty--;
+                if (difficulty < 1) difficulty = 1;
+            }
+            else if (selectedSetting == 1) {
+                // Music volume
+                musicVolume -= VOLUME_STEP;
+                if (musicVolume < MIN_VOLUME) musicVolume = MIN_VOLUME;
+                volumeChanged = true;
+            }
+            else if (selectedSetting == 2) {
+                // Game volume
+                gameVolume -= VOLUME_STEP;
+                if (gameVolume < MIN_VOLUME) gameVolume = MIN_VOLUME;
+                volumeChanged = true;
+            }
+        }
+        else if (event.key.code == Keyboard::Right) {
+            if (selectedSetting == 0) {
+                // Difficulty
+                difficulty++;
+                if (difficulty > 3) difficulty = 3;
+            }
+            else if (selectedSetting == 1) {
+                // Music volume
+                musicVolume += VOLUME_STEP;
+                if (musicVolume > MAX_VOLUME) musicVolume = MAX_VOLUME;
+                volumeChanged = true;
+            }
+            else if (selectedSetting == 2) {
+                // Game volume
+                gameVolume += VOLUME_STEP;
+                if (gameVolume > MAX_VOLUME) gameVolume = MAX_VOLUME;
+                volumeChanged = true;
+            }
         }
         else if (event.key.code == Keyboard::Escape ||
             event.key.code == Keyboard::Return) {
@@ -57,6 +100,7 @@ void handleSettingsInput(Event& event, int& difficulty, bool& exitSettings) {
         }
     }
 }
+
 // Get player name input for high score
 bool getPlayerNameInput(Event& event, char playerName[], int& nameLength, bool& finishedInput) {
     if (event.type == Event::TextEntered) {
@@ -80,6 +124,7 @@ bool getPlayerNameInput(Event& event, char playerName[], int& nameLength, bool& 
     }
     return false;
 }
+
 // Navigate high scores screen
 bool handleHighScoresInput(Event& event) {
     if (event.type == Event::KeyPressed) {
@@ -90,4 +135,5 @@ bool handleHighScoresInput(Event& event) {
     }
     return false;
 }
+
 #endif

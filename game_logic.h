@@ -5,31 +5,38 @@
 #include <cmath>
 #include "constants.h"
 #include "collision.h"
-// Get adjusted ball speed based on difficulty
+
 float getDifficultyBallSpeed(int difficulty) {
-    if (difficulty == 1) return BALL_SPEED * 0.8f;  // Easy: 80% speed
-    if (difficulty == 2) return BALL_SPEED;         // Normal: 100% speed
-    if (difficulty == 3) return BALL_SPEED * 1.3f;  // Hard: 130% speed
+    if (difficulty == 1) return BALL_SPEED * 0.8f;
+    if (difficulty == 2) return BALL_SPEED;
+    if (difficulty == 3) return BALL_SPEED * 1.3f;
     return BALL_SPEED;
 }
-// Get initial lives based on difficulty
+
 int getDifficultyLives(int difficulty) {
-    if (difficulty == 1) return 5;  // Easy: 5 lives
-    if (difficulty == 2) return 3;  // Normal: 3 lives
-    if (difficulty == 3) return 2;  // Hard: 2 lives
+    if (difficulty == 1) return 5;
+    if (difficulty == 2) return 3;
+    if (difficulty == 3) return 2;
     return INITIAL_LIVES;
 }
-// Get paddle width based on difficulty
+
 float getDifficultyPaddleWidth(int difficulty) {
-    if (difficulty == 1) return PADDLE_WIDTH * 1.3f;  // Easy: 30% wider
-    if (difficulty == 2) return PADDLE_WIDTH;         // Normal: standard
-    if (difficulty == 3) return PADDLE_WIDTH * 0.7f;  // Hard: 30% narrower
+    if (difficulty == 1) return PADDLE_WIDTH * 1.3f;
+    if (difficulty == 2) return PADDLE_WIDTH;
+    if (difficulty == 3) return PADDLE_WIDTH * 0.7f;
     return PADDLE_WIDTH;
 }
+
+float getLevelBallSpeed(int level, int difficulty) {
+    float baseSpeed = getDifficultyBallSpeed(difficulty);
+    return baseSpeed + (level - 1) * BALL_SPEED_INCREMENT;
+}
+
 void initializeBricks(int bricks[], int level) {
     for (int i = 0; i < TOTAL_BRICKS; i++) {
         int row = i / GRID_WIDTH;
         int col = i % GRID_WIDTH;
+
         if (level == 1) {
             bricks[i] = (row < 4) ? 1 : 0;
         }
@@ -44,7 +51,7 @@ void initializeBricks(int bricks[], int level) {
         else if (level == 3) {
             if (row < 6) {
                 if (row < 2) bricks[i] = 3;
-                else if (row < 5) bricks[i] = 2;
+                else if (row < 4) bricks[i] = 2;
                 else bricks[i] = 1;
             }
             else {
@@ -53,28 +60,54 @@ void initializeBricks(int bricks[], int level) {
         }
         else if (level == 4) {
             if (row < 7) {
-                bricks[i] = ((row + col) % 2 == 0) ? -1 : 2;
+                if (row == 2 && (col == 2 || col == 4 || col == 5 || col == 7)) {
+                    bricks[i] = -1;
+                }
+                else if (row == 4 && (col == 1 || col == 3 || col == 6 || col == 8)) {
+                    bricks[i] = -1;
+                }
+                else if (row < 3) {
+                    bricks[i] = 3;
+                }
+                else {
+                    bricks[i] = 2;
+                }
             }
             else {
                 bricks[i] = 0;
             }
         }
         else {
-            if (row < 2) bricks[i] = 3;
-            else if (row < 4) bricks[i] = -1;
-            else if (row < 6) bricks[i] = 2;
-            else bricks[i] = 1;
+            if (row < 7) {
+                if (row < 2) {
+                    bricks[i] = 3;
+                }
+                else if (row == 3 && col % 2 == 0) {
+                    bricks[i] = -1;
+                }
+                else if (row < 5) {
+                    bricks[i] = 3;
+                }
+                else {
+                    bricks[i] = 2;
+                }
+            }
+            else {
+                bricks[i] = 1;
+            }
         }
     }
 }
+
 void initializeGame(int& level, int& score, int& lives, float& ballX, float& ballY,
     float& ballVelX, float& ballVelY, float& paddleX,
-    int bricks[], bool& ballLaunched, int difficulty, float& currentPaddleWidth, float& currentBallSpeed) {
+    int bricks[], bool& ballLaunched, int difficulty,
+    float& currentPaddleWidth, float& currentBallSpeed) {
     level = 1;
     score = 0;
     lives = getDifficultyLives(difficulty);
     currentPaddleWidth = getDifficultyPaddleWidth(difficulty);
-    currentBallSpeed = getDifficultyBallSpeed(difficulty);
+    currentBallSpeed = getLevelBallSpeed(level, difficulty);
 
     paddleX = WINDOW_WIDTH / 2.0f - currentPaddleWidth / 2.0f;
     ballX = WINDOW_WIDTH / 2.0f;
@@ -82,23 +115,35 @@ void initializeGame(int& level, int& score, int& lives, float& ballX, float& bal
     ballVelX = 0.0f;
     ballVelY = 0.0f;
     ballLaunched = false;
+
     initializeBricks(bricks, level);
 }
+
 void resetBall(float& ballX, float& ballY, float& ballVelX, float& ballVelY,
-    float paddleX, bool& ballLaunched, float paddleWidth) {
-    ballX = paddleX + paddleWidth / 2.0f;
+    float paddleX, bool& ballLaunched, float basePaddleWidth,
+    float& currentBallSpeed, float& currentPaddleWidth,
+    int difficulty, int level, bool resetPowerUps = true) {
+    ballX = paddleX + currentPaddleWidth / 2.0f;
     ballY = PADDLE_Y - BALL_RADIUS - 5.0f;
     ballVelX = 0.0f;
     ballVelY = 0.0f;
     ballLaunched = false;
+
+    if (resetPowerUps) {
+        currentBallSpeed = getLevelBallSpeed(level, difficulty);
+        currentPaddleWidth = basePaddleWidth;
+    }
 }
-void launchBall(float& ballVelX, float& ballVelY, bool& ballLaunched, float ballSpeed) {
+
+void launchBall(float& ballVelX, float& ballVelY, bool& ballLaunched, float ballSpeed, float speedMultiplier) {
     if (!ballLaunched) {
-        ballVelX = ballSpeed * 0.5f;
-        ballVelY = -ballSpeed;
+        float actualSpeed = ballSpeed * speedMultiplier;
+        ballVelX = actualSpeed * 0.5f;
+        ballVelY = -actualSpeed;
         ballLaunched = true;
     }
 }
+
 void updateBallPosition(float& ballX, float& ballY, float ballVelX, float ballVelY,
     float deltaTime, bool ballLaunched, float paddleX, float paddleWidth) {
     if (ballLaunched) {
@@ -110,7 +155,9 @@ void updateBallPosition(float& ballX, float& ballY, float ballVelX, float ballVe
         ballY = PADDLE_Y - BALL_RADIUS - 5.0f;
     }
 }
-void updatePaddlePosition(float& paddleX, bool leftPressed, bool rightPressed, float deltaTime, float paddleWidth) {
+
+void updatePaddlePosition(float& paddleX, bool leftPressed, bool rightPressed,
+    float deltaTime, float paddleWidth) {
     if (leftPressed && paddleX > 0) {
         paddleX -= PADDLE_SPEED * deltaTime;
         if (paddleX < 0) paddleX = 0;
@@ -122,12 +169,14 @@ void updatePaddlePosition(float& paddleX, bool leftPressed, bool rightPressed, f
         }
     }
 }
+
 int calculateBrickScore(int brickType) {
     if (brickType == 1) return SCORE_BRICK_1HIT;
     if (brickType == 2) return SCORE_BRICK_2HIT;
     if (brickType >= 3) return SCORE_BRICK_3HIT;
     return 0;
 }
+
 void spawnPowerUp(float x, float y, float powerUpX[], float powerUpY[],
     int powerUpType[], bool powerUpActive[]) {
     if (rand() % 100 < POWERUP_CHANCE) {
@@ -142,6 +191,7 @@ void spawnPowerUp(float x, float y, float powerUpX[], float powerUpY[],
         }
     }
 }
+
 void updatePowerUps(float powerUpX[], float powerUpY[], bool powerUpActive[],
     float deltaTime) {
     for (int i = 0; i < MAX_POWERUPS; i++) {
@@ -153,34 +203,73 @@ void updatePowerUps(float powerUpX[], float powerUpY[], bool powerUpActive[],
         }
     }
 }
-void applyPowerUp(int type, int& lives, float& paddleWidth, float& ballSpeed, float basePaddleWidth) {
+
+// FIXED: Added score parameter to match main.cpp call
+void applyPowerUp(int type, int& lives, float& paddleWidth, float& ballSpeedMultiplier,
+    float basePaddleWidth, float& powerUpTimer, int& activePowerUpType, int& score) {
     if (type == POWERUP_EXTRA_LIFE) {
         lives++;
     }
     else if (type == POWERUP_LARGER_PADDLE) {
         paddleWidth = basePaddleWidth * 1.5f;
+        powerUpTimer = POWERUP_DURATION;
+        activePowerUpType = POWERUP_LARGER_PADDLE;
     }
-    else if (type == POWERUP_SLOWER_BALL) {
-        ballSpeed = ballSpeed * 0.7f;
+    else if (type == POWERUP_SMALLER_PADDLE) {
+        paddleWidth = basePaddleWidth * 0.5f;
+        powerUpTimer = POWERUP_DURATION;
+        activePowerUpType = POWERUP_SMALLER_PADDLE;
+    }
+    else if (type == POWERUP_BONUS_SCORE) {
+        score += SCORE_BONUS_POWERUP;
     }
 }
+
+void updatePowerUpTimers(float& powerUpTimer, int& activePowerUpType,
+    float& currentPaddleWidth, float& ballSpeedMultiplier,
+    int difficulty, float deltaTime) {
+    if (powerUpTimer > 0) {
+        powerUpTimer -= deltaTime;
+        if (powerUpTimer <= 0) {
+            currentPaddleWidth = getDifficultyPaddleWidth(difficulty);
+            activePowerUpType = POWERUP_NONE;
+        }
+    }
+}
+
 bool isLevelComplete(int bricks[]) {
     for (int i = 0; i < TOTAL_BRICKS; i++) {
         if (bricks[i] > 0) return false;
     }
     return true;
 }
+
 void nextLevel(int& level, int& score, float& ballX, float& ballY,
     float& ballVelX, float& ballVelY, float& paddleX,
-    int bricks[], bool& ballLaunched, float paddleWidth) {
+    int bricks[], bool& ballLaunched, float& currentPaddleWidth,
+    float& currentBallSpeed, int difficulty,
+    float& powerUpTimer, int& activePowerUpType, float& ballSpeedMultiplier) {
     level++;
     score += SCORE_LEVEL_COMPLETE;
+
     if (level > MAX_LEVELS) {
         level = MAX_LEVELS;
     }
+
+    currentBallSpeed = getLevelBallSpeed(level, difficulty);
+    float basePaddleWidth = getDifficultyPaddleWidth(difficulty);
+    currentPaddleWidth = basePaddleWidth;
+
+    powerUpTimer = 0;
+    activePowerUpType = POWERUP_NONE;
+    ballSpeedMultiplier = 1.0f;
+
     initializeBricks(bricks, level);
-    resetBall(ballX, ballY, ballVelX, ballVelY, paddleX, ballLaunched, paddleWidth);
+    resetBall(ballX, ballY, ballVelX, ballVelY, paddleX, ballLaunched,
+        basePaddleWidth, currentBallSpeed, currentPaddleWidth,
+        difficulty, level, false);
 }
+
 void createParticles(float x, float y, float particleX[], float particleY[],
     float particleVelX[], float particleVelY[],
     float particleLife[], bool particleActive[]) {
@@ -198,6 +287,7 @@ void createParticles(float x, float y, float particleX[], float particleY[],
         }
     }
 }
+
 void updateParticles(float particleX[], float particleY[], float particleVelX[],
     float particleVelY[], float particleLife[], bool particleActive[],
     float deltaTime) {
@@ -212,4 +302,5 @@ void updateParticles(float particleX[], float particleY[], float particleVelX[],
         }
     }
 }
+
 #endif

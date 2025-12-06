@@ -6,7 +6,6 @@
 using namespace std;
 using namespace sf;
 
-// Handle main menu input and return selected option
 int handleMainMenuInput(Event& event, int& selectedOption) {
     if (event.type == Event::KeyPressed) {
         if (event.key.code == Keyboard::Up) {
@@ -24,7 +23,6 @@ int handleMainMenuInput(Event& event, int& selectedOption) {
     return -1;
 }
 
-// Handle pause menu input
 int handlePauseMenuInput(Event& event, int& selectedOption) {
     if (event.type == Event::KeyPressed) {
         if (event.key.code == Keyboard::Up) {
@@ -42,15 +40,13 @@ int handlePauseMenuInput(Event& event, int& selectedOption) {
     return -1;
 }
 
-// Handle settings input with music volume and game volume control
 void handleSettingsInput(Event& event, int& difficulty, int& musicVolume, int& gameVolume,
     int& selectedSetting, bool& exitSettings, bool& volumeChanged) {
     volumeChanged = false;
-
     if (event.type == Event::KeyPressed) {
         if (event.key.code == Keyboard::Up) {
             selectedSetting--;
-            if (selectedSetting < 0) selectedSetting = 2; // 0=difficulty, 1=music, 2=game volume
+            if (selectedSetting < 0) selectedSetting = 2;
         }
         else if (event.key.code == Keyboard::Down) {
             selectedSetting++;
@@ -58,18 +54,15 @@ void handleSettingsInput(Event& event, int& difficulty, int& musicVolume, int& g
         }
         else if (event.key.code == Keyboard::Left) {
             if (selectedSetting == 0) {
-                // Difficulty
                 difficulty--;
                 if (difficulty < 1) difficulty = 1;
             }
             else if (selectedSetting == 1) {
-                // Music volume
                 musicVolume -= VOLUME_STEP;
                 if (musicVolume < MIN_VOLUME) musicVolume = MIN_VOLUME;
                 volumeChanged = true;
             }
             else if (selectedSetting == 2) {
-                // Game volume
                 gameVolume -= VOLUME_STEP;
                 if (gameVolume < MIN_VOLUME) gameVolume = MIN_VOLUME;
                 volumeChanged = true;
@@ -77,40 +70,35 @@ void handleSettingsInput(Event& event, int& difficulty, int& musicVolume, int& g
         }
         else if (event.key.code == Keyboard::Right) {
             if (selectedSetting == 0) {
-                // Difficulty
                 difficulty++;
                 if (difficulty > 3) difficulty = 3;
             }
             else if (selectedSetting == 1) {
-                // Music volume
                 musicVolume += VOLUME_STEP;
                 if (musicVolume > MAX_VOLUME) musicVolume = MAX_VOLUME;
                 volumeChanged = true;
             }
             else if (selectedSetting == 2) {
-                // Game volume
                 gameVolume += VOLUME_STEP;
                 if (gameVolume > MAX_VOLUME) gameVolume = MAX_VOLUME;
                 volumeChanged = true;
             }
         }
-        else if (event.key.code == Keyboard::Escape ||
-            event.key.code == Keyboard::Return) {
+        else if (event.key.code == Keyboard::Escape || event.key.code == Keyboard::Return) {
             exitSettings = true;
         }
     }
 }
 
-// Get player name input for high score
 bool getPlayerNameInput(Event& event, char playerName[], int& nameLength, bool& finishedInput) {
     if (event.type == Event::TextEntered) {
-        if (event.text.unicode == '\b') { // Backspace
+        if (event.text.unicode == '\b') {
             if (nameLength > 0) {
                 nameLength--;
                 playerName[nameLength] = '\0';
             }
         }
-        else if (event.text.unicode == '\r' || event.text.unicode == '\n') { // Enter
+        else if (event.text.unicode == '\r' || event.text.unicode == '\n') {
             if (nameLength > 0) {
                 finishedInput = true;
                 return true;
@@ -125,11 +113,9 @@ bool getPlayerNameInput(Event& event, char playerName[], int& nameLength, bool& 
     return false;
 }
 
-// Navigate high scores screen
 bool handleHighScoresInput(Event& event) {
     if (event.type == Event::KeyPressed) {
-        if (event.key.code == Keyboard::Escape ||
-            event.key.code == Keyboard::Return) {
+        if (event.key.code == Keyboard::Escape || event.key.code == Keyboard::Return) {
             return true;
         }
     }

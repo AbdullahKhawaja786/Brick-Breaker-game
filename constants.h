@@ -29,7 +29,7 @@ const float BRICK_SPACING = 3.0f;
 
 // Power-up settings
 const int MAX_POWERUPS = 10;
-const float POWERUP_SIZE = 30.0f;
+const float POWERUP_SIZE = 20.0f;
 const float POWERUP_COIN_SIZE = 60.0f;
 const float POWERUP_FALL_SPEED = 120.0f;
 const int POWERUP_CHANCE = 20;
@@ -39,9 +39,6 @@ const float POWERUP_DURATION = 10.0f;
 const int MAX_PARTICLES = 50;
 const float PARTICLE_LIFETIME = 0.8f;
 
-// Background animation
-const int MAX_BG_STARS = 80;
-
 // Game states
 const int STATE_MAIN_MENU = 0;
 const int STATE_PLAYING = 1;
@@ -49,6 +46,9 @@ const int STATE_PAUSED = 2;
 const int STATE_GAME_OVER = 3;
 const int STATE_SETTINGS = 4;
 const int STATE_HIGH_SCORES = 5;
+const int STATE_INTRO = 6;
+const int STATE_PAUSE_SETTINGS = 7;
+const int STATE_GAME_COMPLETE = 8;
 
 // Menu options
 const int MENU_START_GAME = 0;
@@ -61,8 +61,9 @@ const int MENU_OPTIONS_COUNT = 5;
 // Pause menu options
 const int PAUSE_RESUME = 0;
 const int PAUSE_SAVE = 1;
-const int PAUSE_MAIN_MENU = 2;
-const int PAUSE_OPTIONS_COUNT = 3;
+const int PAUSE_SETTINGS = 2;
+const int PAUSE_MAIN_MENU = 3;
+const int PAUSE_OPTIONS_COUNT = 4;
 
 // Power-up types
 const int POWERUP_NONE = 0;
@@ -75,7 +76,6 @@ const int POWERUP_BONUS_SCORE = 4;
 const int SCORE_BRICK_1HIT = 10;
 const int SCORE_BRICK_2HIT = 25;
 const int SCORE_BRICK_3HIT = 50;
-const int SCORE_POWERUP = 100;
 const int SCORE_BONUS_POWERUP = 100;
 const int SCORE_LEVEL_COMPLETE = 1000;
 
@@ -104,4 +104,5 @@ const int VOLUME_STEP = 10;
 // Sound effect settings
 const int MAX_SOUND_CHANNELS = 5;
 
+const float MESSAGE_DISPLAY_TIME = 3.0f;
 #endif

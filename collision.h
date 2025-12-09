@@ -29,11 +29,14 @@ void handlePaddleCollision(float ballX, float paddleX, float paddleWidth,
 
 int checkBrickCollision(float ballX, float ballY, float ballRadius, int bricks[]) {
     for (int i = 0; i < TOTAL_BRICKS; i++) {
+        // Skip empty bricks (0) but check indestructible bricks (-1)
         if (bricks[i] == 0) continue;
+        
         int row = i / GRID_WIDTH;
         int col = i % GRID_WIDTH;
         float brickX = BRICK_OFFSET_X + col * (BRICK_WIDTH + BRICK_SPACING);
         float brickY = BRICK_OFFSET_Y + row * (BRICK_HEIGHT + BRICK_SPACING);
+        
         if (ballX + ballRadius > brickX &&
             ballX - ballRadius < brickX + BRICK_WIDTH &&
             ballY + ballRadius > brickY &&
@@ -54,14 +57,28 @@ void handleBrickCollision(float ballX, float ballY, int brickIndex,
     float brickCenterY = brickY + BRICK_HEIGHT / 2.0f;
     float dx = ballX - brickCenterX;
     float dy = ballY - brickCenterY;
+    
     // Determine collision side based on smallest overlap
     float overlapX = (BRICK_WIDTH / 2.0f + BALL_RADIUS) - fabs(dx);
     float overlapY = (BRICK_HEIGHT / 2.0f + BALL_RADIUS) - fabs(dy);
-    if (overlapX < overlapY) {
+    
+    // Use a threshold to ensure clear direction determination
+    if (overlapX < overlapY - 2.0f) {
+        // Horizontal collision - bounce left/right
         ballVelX = -ballVelX;
     }
-    else {
+    else if (overlapY < overlapX - 2.0f) {
+        // Vertical collision - bounce up/down
         ballVelY = -ballVelY;
+    }
+    else {
+        // Corner hit or ambiguous - use velocity direction to decide
+        if (fabs(ballVelX) > fabs(ballVelY)) {
+            ballVelX = -ballVelX;
+        }
+        else {
+            ballVelY = -ballVelY;
+        }
     }
 }
 

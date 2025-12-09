@@ -93,9 +93,8 @@ int main() {
         gameBgSprite.setScale(scaleX, scaleY);
     }
 
-    Texture greenBrickIntact, greenBrickCracked;
+    Texture greenBrickIntact;
     bool hasGreenBrick = greenBrickIntact.loadFromFile("green_brick.png");
-    greenBrickCracked.loadFromFile("green_brick_cracked.png");
 
     Texture yellowBrickIntact, yellowBrickCracked;
     bool hasYellowBrick = yellowBrickIntact.loadFromFile("yellow_brick.png");
@@ -110,7 +109,7 @@ int main() {
 
     bool hasBrickTextures = hasGreenBrick;
     if (!hasBrickTextures) {
-        cerr << "WARNING: Could not load brick textures - using fallback colors" << endl;
+        cerr << "WARNING: Could not load brick textures" << endl;
     }
 
     Texture paddleTexture, ballTexture;
@@ -509,7 +508,7 @@ int main() {
         }
         else if (gameState == STATE_PLAYING || gameState == STATE_PAUSED) {
             drawBricksWithTypes(window, bricks, brickTypes,
-                greenBrickIntact, greenBrickCracked,
+                greenBrickIntact,
                 yellowBrickIntact, yellowBrickCracked,
                 redBrickIntact, redBrickCracked,
                 grayBrick, hasBrickTextures);

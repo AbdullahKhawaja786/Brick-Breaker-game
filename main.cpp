@@ -136,7 +136,7 @@ int main() {
     bool hasSkullTexture = skullTexture.loadFromFile("skull.png");
     bool hasCoinTexture = coinTexture.loadFromFile("coin.png");
 
-    int gameState = STATE_INTRO;  // Start with intro screen
+    int gameState = STATE_INTRO;
     int selectedMenuOption = 0;
     int selectedPauseOption = 0;
     int selectedSetting = 0;
@@ -207,6 +207,11 @@ int main() {
     bool enteringName = false;
     bool finishedNameInput = false;
 
+    // Message display system
+    char messageText[100] = "";
+    float messageTimer = 0.0f;
+    const float MESSAGE_DISPLAY_TIME = 3.0f;
+
     Clock clock;
 
     int previousGameState = STATE_INTRO;
@@ -220,6 +225,14 @@ int main() {
 
         if (deltaTime > 0.05f) {
             deltaTime = 0.05f;
+        }
+
+        // Update message timer
+        if (messageTimer > 0) {
+            messageTimer -= deltaTime;
+            if (messageTimer <= 0) {
+                messageText[0] = '\0';
+            }
         }
 
         // Handle music state transitions
@@ -241,7 +254,7 @@ int main() {
             previousGameState = gameState;
         }
 
-        // Ensure music keeps playing in menu states (auto-restart if needed)
+        // Ensure music keeps playing in menu states
         if (hasMenuMusic) {
             if (gameState == STATE_INTRO ||
                 gameState == STATE_MAIN_MENU ||
@@ -278,6 +291,8 @@ int main() {
                     powerUpTimer = 0;
                     activePowerUpType = POWERUP_NONE;
                     ballSpeedMultiplier = 1.0f;
+                    messageText[0] = '\0';
+                    messageTimer = 0;
                     gameState = STATE_PLAYING;
                 }
                 else if (choice == MENU_LOAD_GAME) {
@@ -296,7 +311,14 @@ int main() {
                         for (int i = 0; i < MAX_POWERUPS; i++) {
                             powerUpActive[i] = false;
                         }
+                        messageText[0] = '\0';
+                        messageTimer = 0;
                         gameState = STATE_PLAYING;
+                    }
+                    else {
+                        // Display error message
+                        safeStringCopy(messageText, "No saved game found!");
+                        messageTimer = MESSAGE_DISPLAY_TIME;
                     }
                 }
                 else if (choice == MENU_HIGH_SCORES) {
@@ -327,13 +349,21 @@ int main() {
                     gameState = STATE_PLAYING;
                 }
                 else if (choice == PAUSE_SAVE) {
-                    saveGameState(SAVE_FILE, level, score, lives, ballX, ballY,
-                        ballVelX, ballVelY, paddleX, bricks, ballLaunched);
+                    if (saveGameState(SAVE_FILE, level, score, lives, ballX, ballY,
+                        ballVelX, ballVelY, paddleX, bricks, ballLaunched)) {
+                        safeStringCopy(messageText, "Game saved successfully!");
+                    }
+                    else {
+                        safeStringCopy(messageText, "Failed to save game!");
+                    }
+                    messageTimer = MESSAGE_DISPLAY_TIME;
                     gameState = STATE_PLAYING;
                 }
                 else if (choice == PAUSE_MAIN_MENU) {
                     gameState = STATE_MAIN_MENU;
                     selectedMenuOption = 0;
+                    messageText[0] = '\0';
+                    messageTimer = 0;
                 }
             }
             else if (gameState == STATE_SETTINGS) {
@@ -433,14 +463,60 @@ int main() {
                 }
 
                 int hitBrick = checkBrickCollision(ballX, ballY, BALL_RADIUS, bricks);
-                if (hitBrick != -1) {
-                    handleBrickCollision(ballX, ballY, hitBrick, ballVelX, ballVelY);
-
-                    if (bricks[hitBrick] > 0) {
+                if (hitBrick != -1 && bricks[hitBrick] != 0) {
+                    // Skip indestructible bricks (gray bricks with value -1)
+                    if (bricks[hitBrick] == -1) {
+                        handleBrickCollision(ballX, ballY, hitBrick, ballVelX, ballVelY);
+                    }
+                    else if (bricks[hitBrick] > 0) {
+                        // Move ball outside brick before handling collision to prevent multiple hits
                         int row = hitBrick / GRID_WIDTH;
                         int col = hitBrick % GRID_WIDTH;
-                        float brickX = BRICK_OFFSET_X + col * (BRICK_WIDTH + BRICK_SPACING) + BRICK_WIDTH / 2;
-                        float brickY = BRICK_OFFSET_Y + row * (BRICK_HEIGHT + BRICK_SPACING) + BRICK_HEIGHT / 2;
+                        float brickLeft = BRICK_OFFSET_X + col * (BRICK_WIDTH + BRICK_SPACING);
+                        float brickRight = brickLeft + BRICK_WIDTH;
+                        float brickTop = BRICK_OFFSET_Y + row * (BRICK_HEIGHT + BRICK_SPACING);
+                        float brickBottom = brickTop + BRICK_HEIGHT;
+                        float brickCenterX = brickLeft + BRICK_WIDTH / 2.0f;
+                        float brickCenterY = brickTop + BRICK_HEIGHT / 2.0f;
+
+                        // Calculate overlap on each side
+                        float overlapLeft = (ballX + BALL_RADIUS) - brickLeft;
+                        float overlapRight = brickRight - (ballX - BALL_RADIUS);
+                        float overlapTop = (ballY + BALL_RADIUS) - brickTop;
+                        float overlapBottom = brickBottom - (ballY - BALL_RADIUS);
+
+                        // Find the smallest overlap (collision side)
+                        float minOverlap = overlapLeft;
+                        int side = 0; // 0=left, 1=right, 2=top, 3=bottom
+                        
+                        if (overlapRight < minOverlap) {
+                            minOverlap = overlapRight;
+                            side = 1;
+                        }
+                        if (overlapTop < minOverlap) {
+                            minOverlap = overlapTop;
+                            side = 2;
+                        }
+                        if (overlapBottom < minOverlap) {
+                            minOverlap = overlapBottom;
+                            side = 3;
+                        }
+
+                        // Push ball out based on collision side
+                        if (side == 0) { // Hit from left
+                            ballX = brickLeft - BALL_RADIUS - 0.1f;
+                        }
+                        else if (side == 1) { // Hit from right
+                            ballX = brickRight + BALL_RADIUS + 0.1f;
+                        }
+                        else if (side == 2) { // Hit from top
+                            ballY = brickTop - BALL_RADIUS - 0.1f;
+                        }
+                        else { // Hit from bottom
+                            ballY = brickBottom + BALL_RADIUS + 0.1f;
+                        }
+
+                        handleBrickCollision(ballX, ballY, hitBrick, ballVelX, ballVelY);
 
                         score += calculateBrickScore(bricks[hitBrick]);
                         bricks[hitBrick]--;
@@ -457,6 +533,8 @@ int main() {
                         }
 
                         if (bricks[hitBrick] == 0) {
+                            float brickX = brickCenterX;
+                            float brickY = brickCenterY;
                             spawnPowerUp(brickX, brickY, powerUpX, powerUpY, powerUpType, powerUpActive);
                             createParticles(brickX, brickY, particleX, particleY,
                                 particleVelX, particleVelY, particleLife, particleActive);
@@ -541,6 +619,17 @@ int main() {
         }
         else if (gameState == STATE_MAIN_MENU) {
             drawMainMenuSimple(window, font, selectedMenuOption, titleFont, hasTitleFont, menuFont, hasMenuFont);
+            
+            // Draw message if present
+            if (messageTimer > 0) {
+                Text message(messageText, font, 24);
+                message.setFillColor(Color::Red);
+                message.setOutlineColor(Color::Black);
+                message.setOutlineThickness(2);
+                FloatRect msgBounds = message.getGlobalBounds();
+                message.setPosition(WINDOW_WIDTH / 2.0f - msgBounds.width / 2.0f, 500);
+                window.draw(message);
+            }
         }
         else if (gameState == STATE_PLAYING || gameState == STATE_PAUSED) {
             drawBricksWithTypes(window, bricks, brickTypes,
@@ -554,6 +643,17 @@ int main() {
                 heartTexture, starTexture, skullTexture, coinTexture, hasHeartTexture || hasStarTexture || hasSkullTexture || hasCoinTexture);
             drawSimpleParticles(window, particleX, particleY, particleActive);
             drawHUD(window, font, score, lives, level);
+
+            // Draw message if present (during gameplay)
+            if (messageTimer > 0) {
+                Text message(messageText, font, 20);
+                message.setFillColor(Color::Green);
+                message.setOutlineColor(Color::Black);
+                message.setOutlineThickness(2);
+                FloatRect msgBounds = message.getGlobalBounds();
+                message.setPosition(WINDOW_WIDTH / 2.0f - msgBounds.width / 2.0f, 40);
+                window.draw(message);
+            }
 
             if (gameState == STATE_PAUSED) {
                 drawPauseMenu(window, font, selectedPauseOption, menuFont, hasMenuFont);

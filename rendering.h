@@ -78,6 +78,14 @@ void drawIntroscreen(RenderWindow& window, Sprite& logoSprite, bool hasLogo, Fon
     FloatRect titleBounds = title.getGlobalBounds();
     title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 80);
     window.draw(title);
+    Text subtitle("The Ultimate Breakout", hasTitleFont ? titleFont : font, 55);
+    subtitle.setFillColor(Color(0, 0, 0));
+    subtitle.setStyle(Text::Style::Bold);
+    subtitle.setOutlineColor(Color(0, 100, 100));
+    subtitle.setOutlineThickness(3);
+    FloatRect subtitleBounds = subtitle.getGlobalBounds();
+    subtitle.setPosition(WINDOW_WIDTH / 2.0f - subtitleBounds.width / 2.0f, 160);
+    window.draw(subtitle);
     Text instruction("Press SPACE to Start", font, 24);
     instruction.setFillColor(Color::White);
     FloatRect instrBounds = instruction.getGlobalBounds();

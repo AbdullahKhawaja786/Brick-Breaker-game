@@ -90,6 +90,48 @@ void handleSettingsInput(Event& event, int& difficulty, int& musicVolume, int& g
     }
 }
 
+void handlePauseSettingsInput(Event& event, int& musicVolume, int& gameVolume,
+    int& selectedSetting, bool& exitSettings, bool& volumeChanged) {
+    volumeChanged = false;
+    if (event.type == Event::KeyPressed) {
+        if (event.key.code == Keyboard::Up) {
+            selectedSetting--;
+            if (selectedSetting < 0) selectedSetting = 1;
+        }
+        else if (event.key.code == Keyboard::Down) {
+            selectedSetting++;
+            if (selectedSetting > 1) selectedSetting = 0;
+        }
+        else if (event.key.code == Keyboard::Left) {
+            if (selectedSetting == 0) {
+                musicVolume -= VOLUME_STEP;
+                if (musicVolume < MIN_VOLUME) musicVolume = MIN_VOLUME;
+                volumeChanged = true;
+            }
+            else if (selectedSetting == 1) {
+                gameVolume -= VOLUME_STEP;
+                if (gameVolume < MIN_VOLUME) gameVolume = MIN_VOLUME;
+                volumeChanged = true;
+            }
+        }
+        else if (event.key.code == Keyboard::Right) {
+            if (selectedSetting == 0) {
+                musicVolume += VOLUME_STEP;
+                if (musicVolume > MAX_VOLUME) musicVolume = MAX_VOLUME;
+                volumeChanged = true;
+            }
+            else if (selectedSetting == 1) {
+                gameVolume += VOLUME_STEP;
+                if (gameVolume > MAX_VOLUME) gameVolume = MAX_VOLUME;
+                volumeChanged = true;
+            }
+        }
+        else if (event.key.code == Keyboard::Escape || event.key.code == Keyboard::Return) {
+            exitSettings = true;
+        }
+    }
+}
+
 bool getPlayerNameInput(Event& event, char playerName[], int& nameLength, bool& finishedInput) {
     if (event.type == Event::TextEntered) {
         if (event.text.unicode == '\b') {

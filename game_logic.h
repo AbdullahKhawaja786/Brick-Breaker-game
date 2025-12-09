@@ -138,7 +138,8 @@ void resetBall(float& ballX, float& ballY, float& ballVelX, float& ballVelY,
 void launchBall(float& ballVelX, float& ballVelY, bool& ballLaunched, float ballSpeed, float speedMultiplier) {
     if (!ballLaunched) {
         float actualSpeed = ballSpeed * speedMultiplier;
-        ballVelX = actualSpeed * 0.5f;
+        float angleVariation = (rand() % 100 - 50) / 100.0f * 0.3f;
+        ballVelX = actualSpeed * angleVariation;
         ballVelY = -actualSpeed;
         ballLaunched = true;
     }
@@ -204,7 +205,6 @@ void updatePowerUps(float powerUpX[], float powerUpY[], bool powerUpActive[],
     }
 }
 
-// FIXED: Added score parameter to match main.cpp call
 void applyPowerUp(int type, int& lives, float& paddleWidth, float& ballSpeedMultiplier,
     float basePaddleWidth, float& powerUpTimer, int& activePowerUpType, int& score) {
     if (type == POWERUP_EXTRA_LIFE) {
@@ -273,24 +273,26 @@ void nextLevel(int& level, int& score, float& ballX, float& ballY,
 void createParticles(float x, float y, float particleX[], float particleY[],
     float particleVelX[], float particleVelY[],
     float particleLife[], bool particleActive[]) {
-    int particlesCreated = 0;
-    for (int i = 0; i < MAX_PARTICLES && particlesCreated < 8; i++) {
+
+    float velX[8] = { 150, 106, 0, -106, -150, -106, 0, 106 };
+    float velY[8] = { 0, 106, 150, 106, 0, -106, -150, -106 };
+
+    for (int i = 0, n = 0; i < MAX_PARTICLES && n < 8; i++) {
         if (!particleActive[i]) {
             particleActive[i] = true;
             particleX[i] = x;
             particleY[i] = y;
-            float angle = (particlesCreated * 45.0f) * 3.14159f / 180.0f;
-            particleVelX[i] = cos(angle) * 100.0f;
-            particleVelY[i] = sin(angle) * 100.0f - 50.0f;
+            particleVelX[i] = velX[n];
+            particleVelY[i] = velY[n];
             particleLife[i] = PARTICLE_LIFETIME;
-            particlesCreated++;
+            n++;
         }
     }
 }
-
 void updateParticles(float particleX[], float particleY[], float particleVelX[],
     float particleVelY[], float particleLife[], bool particleActive[],
     float deltaTime) {
+
     for (int i = 0; i < MAX_PARTICLES; i++) {
         if (particleActive[i]) {
             particleX[i] += particleVelX[i] * deltaTime;
@@ -302,5 +304,4 @@ void updateParticles(float particleX[], float particleY[], float particleVelX[],
         }
     }
 }
-
 #endif

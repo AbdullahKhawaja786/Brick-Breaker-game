@@ -7,6 +7,14 @@
 using namespace std;
 using namespace sf;
 
+int getLength(char arr[]) {
+    int len = 0;
+    while (arr[len] != '\0') {
+        len++;
+    }
+    return len;
+}
+
 void safeStringCopy(char dest[], const char src[]) {
     int i = 0;
     while (src[i] != '\0') {
@@ -16,36 +24,44 @@ void safeStringCopy(char dest[], const char src[]) {
     dest[i] = '\0';
 }
 
-void intToString(int num, char str[]) {
+void intToString(int num, char result[]) {
+    int count = 0, temp = num;
+    int isNegative = 0;
+
     if (num == 0) {
-        str[0] = '0';
-        str[1] = '\0';
+        result[0] = '0';
+        result[1] = '\0';
         return;
     }
-    int i = 0;
-    int temp = num;
-    bool isNegative = false;
+
     if (num < 0) {
-        isNegative = true;
-        temp = -temp;
+        isNegative = 1;
+        num = -num;
+        temp = num;
     }
+
     while (temp > 0) {
-        i++;
         temp /= 10;
+        count++;
     }
-    int len = i;
-    if (isNegative) len++;
-    str[len] = '\0';
-    temp = (num < 0) ? -num : num;
-    while (temp > 0) {
-        str[--len] = (temp % 10) + '0';
-        temp /= 10;
+
+    if (isNegative) {
+        result[0] = '-';
+        result[count + 1] = '\0';
+        count++;
     }
-    if (isNegative) str[0] = '-';
+    else {
+        result[count] = '\0';
+    }
+
+    while (num > 0) {
+        result[--count] = (num % 10) + '0';
+        num /= 10;
+    }
 }
 
 void concatStrings(char dest[], const char src[]) {
-    int destLen = strlen(dest);
+    int destLen = getLength(dest);
     int i = 0;
     while (src[i] != '\0') {
         dest[destLen + i] = src[i];
@@ -64,7 +80,13 @@ void drawMainMenuSimple(RenderWindow& window, Font& font, int selectedOption,
     FloatRect titleBounds = title.getGlobalBounds();
     title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 80);
     window.draw(title);
-    const char* options[] = { "Start New Game", "Load Game", "High Scores", "Settings", "Exit" };
+    char options[][50] = {
+    "Start New Game",
+    "Load Game",
+    "High Scores",
+    "Settings",
+    "Exit"
+    };
     for (int i = 0; i < MENU_OPTIONS_COUNT; i++) {
         Text text(options[i], hasMenuFont ? menuFont : font, 23);
         if (i == selectedOption) {
@@ -96,7 +118,7 @@ void drawPauseMenu(RenderWindow& window, Font& font, int selectedOption,
     FloatRect titleBounds = title.getGlobalBounds();
     title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 150);
     window.draw(title);
-    const char* options[] = { "Resume", "Save Game", "Main Menu" };
+    char options[][50] = {"Resume", "Save Game", "Main Menu"};
     for (int i = 0; i < PAUSE_OPTIONS_COUNT; i++) {
         Text text(options[i], hasMenuFont ? menuFont : font, 23);
         if (i == selectedOption) {
@@ -113,7 +135,7 @@ void drawPauseMenu(RenderWindow& window, Font& font, int selectedOption,
 }
 
 void drawBricksWithTypes(RenderWindow& window, int bricks[], int brickTypes[],
-    Texture& greenIntact, Texture& greenCracked,
+    Texture& greenIntact,
     Texture& yellowIntact, Texture& yellowCracked,
     Texture& redIntact, Texture& redCracked,
     Texture& gray, bool hasTextures) {
@@ -131,7 +153,7 @@ void drawBricksWithTypes(RenderWindow& window, int bricks[], int brickTypes[],
                 brickSprite.setTexture(gray);
             }
             else if (originalType == 1) {
-                brickSprite.setTexture(greenCracked);
+                brickSprite.setTexture(greenIntact);
             }
             else if (originalType == 2) {
                 brickSprite.setTexture((currentHealth == 2) ? yellowIntact : yellowCracked);
@@ -277,7 +299,7 @@ void drawHUD(RenderWindow& window, Font& font, int score, int lives, int level) 
     livesText.setFillColor(Color::White);
     livesText.setOutlineColor(Color::Black);
     livesText.setOutlineThickness(2);
-    livesText.setPosition(WINDOW_WIDTH - 100, 10);
+    livesText.setPosition(700, 10);
     window.draw(livesText);
     safeStringCopy(buffer, "Level: ");
     char levelStr[20];
@@ -287,7 +309,7 @@ void drawHUD(RenderWindow& window, Font& font, int score, int lives, int level) 
     levelText.setFillColor(Color::White);
     levelText.setOutlineColor(Color::Black);
     levelText.setOutlineThickness(2);
-    levelText.setPosition(WINDOW_WIDTH / 2 - 40, 10);
+    levelText.setPosition(360, 10);
     window.draw(levelText);
 }
 
@@ -330,7 +352,16 @@ void drawSettings(RenderWindow& window, Font& font, int difficulty, int musicVol
     char diffStr[20];
     intToString(difficulty, diffStr);
     concatStrings(buffer, diffStr);
-    const char* diffName = (difficulty == 1) ? " (Easy)" : (difficulty == 2) ? " (Normal)" : " (Hard)";
+    const char* diffName;
+    if (difficulty == 1) {
+        diffName = " (Easy)";
+    }
+    else if (difficulty == 2) {
+        diffName = " (Normal)";
+    }
+    else {
+        diffName = " (Hard)";
+    }
     concatStrings(buffer, diffName);
     Text diffText(buffer, font, 26);
     diffText.setFillColor((selectedSetting == 0) ? Color(64, 224, 208) : Color::White);
@@ -357,7 +388,7 @@ void drawSettings(RenderWindow& window, Font& font, int difficulty, int musicVol
     RectangleShape musicBarBg(Vector2f(barWidth, barHeight));
     musicBarBg.setPosition(barX, 275);
     musicBarBg.setFillColor(Color(50, 50, 50));
-    musicBarBg.setOutlineColor((selectedSetting == 1) ? Color(64, 224, 208) : Color::White);
+    musicBarBg.setOutlineColor(Color::White);
     musicBarBg.setOutlineThickness(2);
     window.draw(musicBarBg);
     RectangleShape musicBarFill(Vector2f((barWidth * musicVolume) / 100.0f, barHeight));
@@ -380,7 +411,7 @@ void drawSettings(RenderWindow& window, Font& font, int difficulty, int musicVol
     RectangleShape gameBarBg(Vector2f(barWidth, barHeight));
     gameBarBg.setPosition(barX, 365);
     gameBarBg.setFillColor(Color(50, 50, 50));
-    gameBarBg.setOutlineColor((selectedSetting == 2) ? Color(64, 224, 208) : Color::White);
+    gameBarBg.setOutlineColor(Color::White);
     gameBarBg.setOutlineThickness(2);
     window.draw(gameBarBg);
     RectangleShape gameBarFill(Vector2f((barWidth * gameVolume) / 100.0f, barHeight));
@@ -420,7 +451,7 @@ void drawHighScores(RenderWindow& window, Font& font, int scores[], char names[]
         safeStringCopy(buffer, numStr);
         concatStrings(buffer, ". ");
         concatStrings(buffer, names[i]);
-        int nameLen = strlen(names[i]);
+        int nameLen = getLength(names[i]);
         for (int j = nameLen; j < 20; j++) {
             concatStrings(buffer, " ");
         }

@@ -69,6 +69,7 @@ void concatStrings(char dest[], const char src[]) {
     }
     dest[destLen + i] = '\0';
 }
+
 void drawIntroscreen(RenderWindow& window, Sprite& logoSprite, bool hasLogo, Font& font, Font& titleFont, bool hasTitleFont) {
     Text title("BRICK BREAKER", hasTitleFont ? titleFont : font, 70);
     title.setFillColor(Color(0, 0, 0));
@@ -84,7 +85,7 @@ void drawIntroscreen(RenderWindow& window, Sprite& logoSprite, bool hasLogo, Fon
     subtitle.setOutlineColor(Color(0, 100, 100));
     subtitle.setOutlineThickness(3);
     FloatRect subtitleBounds = subtitle.getGlobalBounds();
-    subtitle.setPosition(WINDOW_WIDTH / 2.0f - subtitleBounds.width / 2.0f, 160);
+    subtitle.setPosition(WINDOW_WIDTH / 2.0f - subtitleBounds.width / 2.0f, 180);
     window.draw(subtitle);
     Text instruction("Press SPACE to Start", font, 24);
     instruction.setFillColor(Color::White);
@@ -111,7 +112,7 @@ void drawMainMenuSimple(RenderWindow& window, Font& font, int selectedOption,
     "Exit"
     };
     for (int i = 0; i < MENU_OPTIONS_COUNT; i++) {
-        Text text(options[i], hasMenuFont ? menuFont : font, 23);
+        Text text(options[i], hasMenuFont ? menuFont : font, 26);
         if (i == selectedOption) {
             text.setFillColor(Color(64, 224, 208));
             text.setStyle(Text::Bold);
@@ -141,7 +142,7 @@ void drawPauseMenu(RenderWindow& window, Font& font, int selectedOption,
     FloatRect titleBounds = title.getGlobalBounds();
     title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 150);
     window.draw(title);
-    char options[][50] = {"Resume", "Save Game", "Main Menu"};
+    char options[][50] = { "Resume", "Save Game", "Settings", "Main Menu" };
     for (int i = 0; i < PAUSE_OPTIONS_COUNT; i++) {
         Text text(options[i], hasMenuFont ? menuFont : font, 23);
         if (i == selectedOption) {
@@ -152,9 +153,92 @@ void drawPauseMenu(RenderWindow& window, Font& font, int selectedOption,
             text.setFillColor(Color::White);
         }
         FloatRect textBounds = text.getGlobalBounds();
-        text.setPosition(WINDOW_WIDTH / 2.0f - textBounds.width / 2.0f, 270.0f + i * 50.0f);
+        text.setPosition(WINDOW_WIDTH / 2.0f - textBounds.width / 2.0f, 250.0f + i * 50.0f);
         window.draw(text);
     }
+}
+
+void drawPauseSettings(RenderWindow& window, Font& font, int musicVolume, int gameVolume, int selectedSetting) {
+    RectangleShape overlay(Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT));
+    overlay.setFillColor(Color(0, 0, 0, 200));
+    window.draw(overlay);
+
+    Text title("VOLUME SETTINGS", font, 45);
+    title.setFillColor(Color(64, 224, 208));
+    FloatRect titleBounds = title.getGlobalBounds();
+    title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 120);
+    window.draw(title);
+
+    char buffer[100];
+    // Music Volume
+    safeStringCopy(buffer, "Music Volume: ");
+    char volStr[20];
+    intToString(musicVolume, volStr);
+    concatStrings(buffer, volStr);
+    concatStrings(buffer, "%");
+    Text musicVolumeText(buffer, font, 26);
+    musicVolumeText.setFillColor((selectedSetting == 0) ? Color(64, 224, 208) : Color::White);
+    if (selectedSetting == 0) musicVolumeText.setStyle(Text::Bold);
+    FloatRect musicBounds = musicVolumeText.getGlobalBounds();
+    musicVolumeText.setPosition(WINDOW_WIDTH / 2.0f - musicBounds.width / 2.0f, 220);
+    window.draw(musicVolumeText);
+
+    // Music volume bar
+    float barWidth = 300.0f;
+    float barHeight = 18.0f;
+    float barX = WINDOW_WIDTH / 2.0f - barWidth / 2.0f;
+    RectangleShape musicBarBg(Vector2f(barWidth, barHeight));
+    musicBarBg.setPosition(barX, 255);
+    musicBarBg.setFillColor(Color(50, 50, 50));
+    musicBarBg.setOutlineColor(Color::White);
+    musicBarBg.setOutlineThickness(2);
+    window.draw(musicBarBg);
+    RectangleShape musicBarFill(Vector2f((barWidth * musicVolume) / 100.0f, barHeight));
+    musicBarFill.setPosition(barX, 255);
+    musicBarFill.setFillColor(Color(64, 224, 208));
+    window.draw(musicBarFill);
+
+    // Game Volume
+    safeStringCopy(buffer, "Game Volume: ");
+    char gameVolStr[20];
+    intToString(gameVolume, gameVolStr);
+    concatStrings(buffer, gameVolStr);
+    concatStrings(buffer, "%");
+    Text gameVolumeText(buffer, font, 26);
+    gameVolumeText.setFillColor((selectedSetting == 1) ? Color(64, 224, 208) : Color::White);
+    if (selectedSetting == 1) gameVolumeText.setStyle(Text::Bold);
+    FloatRect gameBounds = gameVolumeText.getGlobalBounds();
+    gameVolumeText.setPosition(WINDOW_WIDTH / 2.0f - gameBounds.width / 2.0f, 310);
+    window.draw(gameVolumeText);
+
+    // Game volume bar
+    RectangleShape gameBarBg(Vector2f(barWidth, barHeight));
+    gameBarBg.setPosition(barX, 345);
+    gameBarBg.setFillColor(Color(50, 50, 50));
+    gameBarBg.setOutlineColor(Color::White);
+    gameBarBg.setOutlineThickness(2);
+    window.draw(gameBarBg);
+    RectangleShape gameBarFill(Vector2f((barWidth * gameVolume) / 100.0f, barHeight));
+    gameBarFill.setPosition(barX, 345);
+    gameBarFill.setFillColor(Color(255, 165, 0));
+    window.draw(gameBarFill);
+
+    // Instructions
+    Text navInstruct("UP/DOWN: Select Setting", font, 16);
+    navInstruct.setFillColor(Color(150, 150, 150));
+    FloatRect navBounds = navInstruct.getGlobalBounds();
+    navInstruct.setPosition(WINDOW_WIDTH / 2.0f - navBounds.width / 2.0f, 420);
+    window.draw(navInstruct);
+    Text adjustInstruct("LEFT/RIGHT: Adjust Volume", font, 16);
+    adjustInstruct.setFillColor(Color(150, 150, 150));
+    FloatRect adjustBounds = adjustInstruct.getGlobalBounds();
+    adjustInstruct.setPosition(WINDOW_WIDTH / 2.0f - adjustBounds.width / 2.0f, 445);
+    window.draw(adjustInstruct);
+    Text exitInstruct("ENTER/ESC: Return to Pause Menu", font, 16);
+    exitInstruct.setFillColor(Color(150, 150, 150));
+    FloatRect exitBounds = exitInstruct.getGlobalBounds();
+    exitInstruct.setPosition(WINDOW_WIDTH / 2.0f - exitBounds.width / 2.0f, 470);
+    window.draw(exitInstruct);
 }
 
 void drawBricksWithTypes(RenderWindow& window, int bricks[], int brickTypes[],

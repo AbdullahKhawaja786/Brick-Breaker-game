@@ -3,6 +3,14 @@
 #include <cmath>
 #include "constants.h"
 
+// User-defined absolute value function
+float absoluteValue(float value) {
+    if (value < 0) {
+        return -value;
+    }
+    return value;
+}
+
 bool checkPaddleCollision(float ballX, float ballY, float ballRadius,
     float paddleX, float paddleY, float paddleWidth, float paddleHeight) {
     return ballX + ballRadius > paddleX &&
@@ -13,12 +21,10 @@ bool checkPaddleCollision(float ballX, float ballY, float ballRadius,
 
 void handlePaddleCollision(float ballX, float paddleX, float paddleWidth,
     float& ballVelX, float& ballVelY) {
-    ballVelY = -fabs(ballVelY);
-    // Add spin based on where ball hits paddle (0 to 1 normalized)
+    ballVelY = -absoluteValue(ballVelY);
     float hitPos = (ballX - paddleX) / paddleWidth;
-    float angle = (hitPos - 0.5f) * 2.0f; // Convert to -1 to 1
+    float angle = (hitPos - 0.5f) * 2.0f;
     ballVelX = angle * BALL_SPEED * 0.7f;
-    // Maintain minimum speed
     float speed = sqrt(ballVelX * ballVelX + ballVelY * ballVelY);
     if (speed < BALL_SPEED * 0.8f) {
         float ratio = BALL_SPEED * 0.8f / speed;
@@ -29,14 +35,13 @@ void handlePaddleCollision(float ballX, float paddleX, float paddleWidth,
 
 int checkBrickCollision(float ballX, float ballY, float ballRadius, int bricks[]) {
     for (int i = 0; i < TOTAL_BRICKS; i++) {
-        // Skip empty bricks (0) but check indestructible bricks (-1)
         if (bricks[i] == 0) continue;
-        
+
         int row = i / GRID_WIDTH;
         int col = i % GRID_WIDTH;
         float brickX = BRICK_OFFSET_X + col * (BRICK_WIDTH + BRICK_SPACING);
         float brickY = BRICK_OFFSET_Y + row * (BRICK_HEIGHT + BRICK_SPACING);
-        
+
         if (ballX + ballRadius > brickX &&
             ballX - ballRadius < brickX + BRICK_WIDTH &&
             ballY + ballRadius > brickY &&
@@ -47,7 +52,7 @@ int checkBrickCollision(float ballX, float ballY, float ballRadius, int bricks[]
     return -1;
 }
 
-void handleBrickCollision(float ballX, float ballY, int brickIndex,
+void handleBrickCollision(float& ballX, float& ballY, int brickIndex,
     float& ballVelX, float& ballVelY) {
     int row = brickIndex / GRID_WIDTH;
     int col = brickIndex % GRID_WIDTH;
@@ -57,28 +62,29 @@ void handleBrickCollision(float ballX, float ballY, int brickIndex,
     float brickCenterY = brickY + BRICK_HEIGHT / 2.0f;
     float dx = ballX - brickCenterX;
     float dy = ballY - brickCenterY;
-    
-    // Determine collision side based on smallest overlap
-    float overlapX = (BRICK_WIDTH / 2.0f + BALL_RADIUS) - fabs(dx);
-    float overlapY = (BRICK_HEIGHT / 2.0f + BALL_RADIUS) - fabs(dy);
-    
-    // Use a threshold to ensure clear direction determination
-    if (overlapX < overlapY - 2.0f) {
-        // Horizontal collision - bounce left/right
-        ballVelX = -ballVelX;
-    }
-    else if (overlapY < overlapX - 2.0f) {
-        // Vertical collision - bounce up/down
-        ballVelY = -ballVelY;
-    }
-    else {
-        // Corner hit or ambiguous - use velocity direction to decide
-        if (fabs(ballVelX) > fabs(ballVelY)) {
-            ballVelX = -ballVelX;
+    float overlapX = (BRICK_WIDTH / 2.0f + BALL_RADIUS) - absoluteValue(dx);
+    float overlapY = (BRICK_HEIGHT / 2.0f + BALL_RADIUS) - absoluteValue(dy);
+
+    // Push ball out of brick before bouncing
+    if (overlapX < overlapY) {
+        // Horizontal collision 
+        if (dx < 0) {
+            ballX = brickX - BALL_RADIUS - 1.0f;
         }
         else {
-            ballVelY = -ballVelY;
+            ballX = brickX + BRICK_WIDTH + BALL_RADIUS + 1.0f;
         }
+        ballVelX = -ballVelX;
+    }
+    else {
+        // Vertical collision
+        if (dy < 0) {
+            ballY = brickY - BALL_RADIUS - 1.0f;
+        }
+        else {
+            ballY = brickY + BRICK_HEIGHT + BALL_RADIUS + 1.0f;
+        }
+        ballVelY = -ballVelY;
     }
 }
 
@@ -86,15 +92,15 @@ void checkWallCollisions(float& ballX, float& ballY, float ballRadius,
     float& ballVelX, float& ballVelY) {
     if (ballX - ballRadius < 0) {
         ballX = ballRadius;
-        ballVelX = fabs(ballVelX);
+        ballVelX = absoluteValue(ballVelX);
     }
     if (ballX + ballRadius > WINDOW_WIDTH) {
         ballX = WINDOW_WIDTH - ballRadius;
-        ballVelX = -fabs(ballVelX);
+        ballVelX = -absoluteValue(ballVelX);
     }
     if (ballY - ballRadius < 0) {
         ballY = ballRadius;
-        ballVelY = fabs(ballVelY);
+        ballVelY = absoluteValue(ballVelY);
     }
 }
 
@@ -106,7 +112,6 @@ int checkPowerUpCollision(float paddleX, float paddleY, float paddleWidth, float
     float powerUpX[], float powerUpY[], bool powerUpActive[], int powerUpType[]) {
     for (int i = 0; i < MAX_POWERUPS; i++) {
         if (!powerUpActive[i]) continue;
-        // Special handling for coin power-up (larger collision box)
         float powerUpSize = (powerUpType[i] == POWERUP_BONUS_SCORE) ? POWERUP_COIN_SIZE : POWERUP_SIZE;
         if (powerUpX[i] + powerUpSize > paddleX &&
             powerUpX[i] < paddleX + paddleWidth &&

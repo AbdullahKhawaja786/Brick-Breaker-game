@@ -140,6 +140,7 @@ int main() {
     int selectedMenuOption = 0;
     int selectedPauseOption = 0;
     int selectedSetting = 0;
+    int selectedPauseSetting = 0;
 
     int level = 1;
     int score = 0;
@@ -211,6 +212,7 @@ int main() {
     float messageTimer = 0.0f;
 
     Clock clock;
+
     int previousGameState = STATE_INTRO;
 
     if (hasMenuMusic && gameState == STATE_INTRO) {
@@ -223,6 +225,8 @@ int main() {
         if (deltaTime > 0.05f) {
             deltaTime = 0.05f;
         }
+
+        // Update message timer
         if (messageTimer > 0) {
             messageTimer -= deltaTime;
             if (messageTimer <= 0) {
@@ -237,7 +241,8 @@ int main() {
                     gameState == STATE_MAIN_MENU ||
                     gameState == STATE_SETTINGS ||
                     gameState == STATE_HIGH_SCORES ||
-                    gameState == STATE_GAME_OVER) {
+                    gameState == STATE_GAME_OVER ||
+                    gameState == STATE_GAME_COMPLETE) {
                     if (menuMusic.getStatus() != Music::Playing) {
                         menuMusic.play();
                     }
@@ -255,7 +260,8 @@ int main() {
                 gameState == STATE_MAIN_MENU ||
                 gameState == STATE_SETTINGS ||
                 gameState == STATE_HIGH_SCORES ||
-                gameState == STATE_GAME_OVER) {
+                gameState == STATE_GAME_OVER ||
+                gameState == STATE_GAME_COMPLETE) {
                 if (menuMusic.getStatus() == Music::Stopped) {
                     menuMusic.play();
                 }
@@ -265,6 +271,7 @@ int main() {
         Event event;
         while (window.pollEvent(event)) {
             if (event.type == Event::Closed) {
+                saveSettings(SETTINGS_FILE, difficulty, musicVolume, gameVolume);
                 window.close();
             }
 
@@ -310,7 +317,7 @@ int main() {
                         messageTimer = 0;
                         gameState = STATE_PLAYING;
                     }
-                    else{
+                    else {
                         safeStringCopy(messageText, "No saved game found!");
                         messageTimer = MESSAGE_DISPLAY_TIME;
                     }
@@ -353,11 +360,43 @@ int main() {
                     messageTimer = MESSAGE_DISPLAY_TIME;
                     gameState = STATE_PLAYING;
                 }
+                else if (choice == PAUSE_SETTINGS) {
+                    selectedPauseSetting = 0;
+                    gameState = STATE_PAUSE_SETTINGS;
+                }
                 else if (choice == PAUSE_MAIN_MENU) {
                     gameState = STATE_MAIN_MENU;
                     selectedMenuOption = 0;
                     messageText[0] = '\0';
                     messageTimer = 0;
+                }
+            }
+            else if (gameState == STATE_PAUSE_SETTINGS) {
+                bool exitSettings = false;
+                bool volumeChanged = false;
+                handlePauseSettingsInput(event, musicVolume, gameVolume,
+                    selectedPauseSetting, exitSettings, volumeChanged);
+
+                if (volumeChanged) {
+                    if (hasMenuMusic) {
+                        menuMusic.setVolume(static_cast<float>(musicVolume));
+                    }
+                    if (hasBrickSound) {
+                        for (int i = 0; i < MAX_SOUND_CHANNELS; i++) {
+                            brickBreakSounds[i].setVolume(static_cast<float>(gameVolume));
+                        }
+                    }
+                    if (hasPaddleSound) {
+                        for (int i = 0; i < MAX_SOUND_CHANNELS; i++) {
+                            paddleHitSounds[i].setVolume(static_cast<float>(gameVolume));
+                        }
+                    }
+                    saveSettings(SETTINGS_FILE, difficulty, musicVolume, gameVolume);
+                }
+
+                if (exitSettings) {
+                    saveSettings(SETTINGS_FILE, difficulty, musicVolume, gameVolume);
+                    gameState = STATE_PAUSED;
                 }
             }
             else if (gameState == STATE_SETTINGS) {
@@ -380,6 +419,7 @@ int main() {
                             paddleHitSounds[i].setVolume(static_cast<float>(gameVolume));
                         }
                     }
+                    saveSettings(SETTINGS_FILE, difficulty, musicVolume, gameVolume);
                 }
 
                 if (exitSettings) {
@@ -393,6 +433,37 @@ int main() {
                 }
             }
             else if (gameState == STATE_GAME_OVER) {
+                if (enteringName) {
+                    if (getPlayerNameInput(event, playerName, nameLength, finishedNameInput)) {
+                        saveHighScore(HIGHSCORE_FILE, score, playerName, highScores, highScoreNames);
+                        loadHighScores(HIGHSCORE_FILE, highScores, highScoreNames);
+                        enteringName = false;
+                        gameState = STATE_MAIN_MENU;
+                        selectedMenuOption = 0;
+                    }
+                }
+                else if (event.type == Event::KeyPressed &&
+                    event.key.code == Keyboard::Return) {
+                    bool isHighScore = false;
+                    for (int i = 0; i < MAX_HIGH_SCORES; i++) {
+                        if (score > highScores[i]) {
+                            isHighScore = true;
+                            break;
+                        }
+                    }
+                    if (isHighScore) {
+                        enteringName = true;
+                        nameLength = 0;
+                        playerName[0] = '\0';
+                        finishedNameInput = false;
+                    }
+                    else {
+                        gameState = STATE_MAIN_MENU;
+                        selectedMenuOption = 0;
+                    }
+                }
+            }
+            else if (gameState == STATE_GAME_COMPLETE) {
                 if (enteringName) {
                     if (getPlayerNameInput(event, playerName, nameLength, finishedNameInput)) {
                         saveHighScore(HIGHSCORE_FILE, score, playerName, highScores, highScoreNames);
@@ -457,54 +528,14 @@ int main() {
                 }
 
                 int hitBrick = checkBrickCollision(ballX, ballY, BALL_RADIUS, bricks);
-                if (hitBrick != -1 && bricks[hitBrick] != 0) {
-                    if (bricks[hitBrick] == -1) {
-                        handleBrickCollision(ballX, ballY, hitBrick, ballVelX, ballVelY);
-                    }
-                    else if (bricks[hitBrick] > 0) {
+                if (hitBrick != -1) {
+                    handleBrickCollision(ballX, ballY, hitBrick, ballVelX, ballVelY);
+
+                    if (bricks[hitBrick] > 0) {
                         int row = hitBrick / GRID_WIDTH;
                         int col = hitBrick % GRID_WIDTH;
-                        float brickLeft = BRICK_OFFSET_X + col * (BRICK_WIDTH + BRICK_SPACING);
-                        float brickRight = brickLeft + BRICK_WIDTH;
-                        float brickTop = BRICK_OFFSET_Y + row * (BRICK_HEIGHT + BRICK_SPACING);
-                        float brickBottom = brickTop + BRICK_HEIGHT;
-                        float brickCenterX = brickLeft + BRICK_WIDTH / 2.0f;
-                        float brickCenterY = brickTop + BRICK_HEIGHT / 2.0f;
-                        float overlapLeft = (ballX + BALL_RADIUS) - brickLeft;
-                        float overlapRight = brickRight - (ballX - BALL_RADIUS);
-                        float overlapTop = (ballY + BALL_RADIUS) - brickTop;
-                        float overlapBottom = brickBottom - (ballY - BALL_RADIUS);
-                        float minOverlap = overlapLeft;
-                        int side = 0; // 0=left, 1=right, 2=top, 3=bottom
-
-                        if (overlapRight < minOverlap) {
-                            minOverlap = overlapRight;
-                            side = 1;
-                        }
-                        if (overlapTop < minOverlap) {
-                            minOverlap = overlapTop;
-                            side = 2;
-                        }
-                        if (overlapBottom < minOverlap) {
-                            minOverlap = overlapBottom;
-                            side = 3;
-                        }
-
-                        // Push ball out based on collision side
-                        if (side == 0) { // Hit from left
-                            ballX = brickLeft - BALL_RADIUS - 0.1f;
-                        }
-                        else if (side == 1) { // Hit from right
-                            ballX = brickRight + BALL_RADIUS + 0.1f;
-                        }
-                        else if (side == 2) { // Hit from top
-                            ballY = brickTop - BALL_RADIUS - 0.1f;
-                        }
-                        else { // Hit from bottom
-                            ballY = brickBottom + BALL_RADIUS + 0.1f;
-                        }
-
-                        handleBrickCollision(ballX, ballY, hitBrick, ballVelX, ballVelY);
+                        float brickX = BRICK_OFFSET_X + col * (BRICK_WIDTH + BRICK_SPACING) + BRICK_WIDTH / 2;
+                        float brickY = BRICK_OFFSET_Y + row * (BRICK_HEIGHT + BRICK_SPACING) + BRICK_HEIGHT / 2;
 
                         score += calculateBrickScore(bricks[hitBrick]);
                         bricks[hitBrick]--;
@@ -521,8 +552,6 @@ int main() {
                         }
 
                         if (bricks[hitBrick] == 0) {
-                            float brickX = brickCenterX;
-                            float brickY = brickCenterY;
                             spawnPowerUp(brickX, brickY, powerUpX, powerUpY, powerUpType, powerUpActive);
                             createParticles(brickX, brickY, particleX, particleY,
                                 particleVelX, particleVelY, particleLife, particleActive);
@@ -548,7 +577,7 @@ int main() {
 
                 if (isLevelComplete(bricks)) {
                     if (level >= MAX_LEVELS) {
-                        gameState = STATE_GAME_OVER;
+                        gameState = STATE_GAME_COMPLETE;
                     }
                     else {
                         nextLevel(level, score, ballX, ballY, ballVelX, ballVelY,
@@ -571,12 +600,13 @@ int main() {
                 int powerUpTypeCollected = powerUpType[hitPowerUp];
                 applyPowerUp(powerUpTypeCollected, lives, currentPaddleWidth, ballSpeedMultiplier,
                     getDifficultyPaddleWidth(difficulty), powerUpTimer, activePowerUpType, score);
-                if (powerUpTypeCollected != POWERUP_BONUS_SCORE) {
-                    score += SCORE_POWERUP;
-                }
                 powerUpActive[hitPowerUp] = false;
             }
         }
+
+        // ========================================
+        // RENDERING SECTION - INSIDE THE LOOP!
+        // ========================================
 
         // Clear and draw background
         if (gameState == STATE_INTRO) {
@@ -588,7 +618,8 @@ int main() {
         else if (gameState == STATE_MAIN_MENU ||
             gameState == STATE_SETTINGS ||
             gameState == STATE_HIGH_SCORES ||
-            gameState == STATE_GAME_OVER) {
+            gameState == STATE_GAME_OVER ||
+            gameState == STATE_GAME_COMPLETE) {
             window.clear(Color(10, 10, 30));
             if (hasMenuBg) {
                 window.draw(menuBgSprite);
@@ -608,7 +639,6 @@ int main() {
         else if (gameState == STATE_MAIN_MENU) {
             drawMainMenuSimple(window, font, selectedMenuOption, titleFont, hasTitleFont, menuFont, hasMenuFont);
 
-            // Draw message if present
             if (messageTimer > 0) {
                 Text message(messageText, font, 24);
                 message.setFillColor(Color::Red);
@@ -632,7 +662,6 @@ int main() {
             drawSimpleParticles(window, particleX, particleY, particleActive);
             drawHUD(window, font, score, lives, level);
 
-            // Draw message if present (during gameplay)
             if (messageTimer > 0) {
                 Text message(messageText, font, 20);
                 message.setFillColor(Color::Green);
@@ -647,6 +676,25 @@ int main() {
                 drawPauseMenu(window, font, selectedPauseOption, menuFont, hasMenuFont);
             }
         }
+        else if (gameState == STATE_PAUSE_SETTINGS) {
+            window.clear(Color(10, 15, 40));
+            if (hasGameBg) {
+                window.draw(gameBgSprite);
+            }
+            drawBricksWithTypes(window, bricks, brickTypes,
+                greenBrickIntact,
+                yellowBrickIntact, yellowBrickCracked,
+                redBrickIntact, redBrickCracked,
+                grayBrick, hasBrickTextures);
+            drawPaddle(window, paddleX, currentPaddleWidth, paddleTexture, hasPaddleTexture);
+            drawBall(window, ballX, ballY, ballTexture, hasBallTexture);
+            drawPowerUpsSimple(window, powerUpX, powerUpY, powerUpType, powerUpActive,
+                heartTexture, starTexture, skullTexture, coinTexture, hasHeartTexture || hasStarTexture || hasSkullTexture || hasCoinTexture);
+            drawSimpleParticles(window, particleX, particleY, particleActive);
+            drawHUD(window, font, score, lives, level);
+
+            drawPauseSettings(window, font, musicVolume, gameVolume, selectedPauseSetting);
+        }
         else if (gameState == STATE_GAME_OVER) {
             if (enteringName) {
                 drawGameOver(window, font, score);
@@ -654,6 +702,72 @@ int main() {
             }
             else {
                 drawGameOver(window, font, score);
+            }
+        }
+        else if (gameState == STATE_GAME_COMPLETE) {
+            if (enteringName) {
+                // Draw game complete screen
+                window.clear(Color(10, 20, 50));
+                Text title("CONGRATULATIONS!", font, 60);
+                title.setFillColor(Color(255, 215, 0));
+                title.setOutlineColor(Color(200, 150, 0));
+                title.setOutlineThickness(3);
+                FloatRect titleBounds = title.getGlobalBounds();
+                title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 120);
+                window.draw(title);
+
+                Text subtitle("You've Completed All Levels!", font, 32);
+                subtitle.setFillColor(Color::White);
+                FloatRect subtitleBounds = subtitle.getGlobalBounds();
+                subtitle.setPosition(WINDOW_WIDTH / 2.0f - subtitleBounds.width / 2.0f, 200);
+                window.draw(subtitle);
+
+                char buffer[100];
+                safeStringCopy(buffer, "Final Score: ");
+                char scoreStr[20];
+                intToString(score, scoreStr);
+                concatStrings(buffer, scoreStr);
+                Text scoreText(buffer, font, 32);
+                scoreText.setFillColor(Color(64, 224, 208));
+                FloatRect scoreBounds = scoreText.getGlobalBounds();
+                scoreText.setPosition(WINDOW_WIDTH / 2.0f - scoreBounds.width / 2.0f, 260);
+                window.draw(scoreText);
+
+                drawNameInput(window, font, playerName);
+            }
+            else {
+                // Draw game complete screen
+                window.clear(Color(10, 20, 50));
+                Text title("CONGRATULATIONS!", font, 60);
+                title.setFillColor(Color(255, 215, 0));
+                title.setOutlineColor(Color(200, 150, 0));
+                title.setOutlineThickness(3);
+                FloatRect titleBounds = title.getGlobalBounds();
+                title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 120);
+                window.draw(title);
+
+                Text subtitle("You've Completed All Levels!", font, 32);
+                subtitle.setFillColor(Color::White);
+                FloatRect subtitleBounds = subtitle.getGlobalBounds();
+                subtitle.setPosition(WINDOW_WIDTH / 2.0f - subtitleBounds.width / 2.0f, 200);
+                window.draw(subtitle);
+
+                char buffer[100];
+                safeStringCopy(buffer, "Final Score: ");
+                char scoreStr[20];
+                intToString(score, scoreStr);
+                concatStrings(buffer, scoreStr);
+                Text scoreText(buffer, font, 32);
+                scoreText.setFillColor(Color(64, 224, 208));
+                FloatRect scoreBounds = scoreText.getGlobalBounds();
+                scoreText.setPosition(WINDOW_WIDTH / 2.0f - scoreBounds.width / 2.0f, 280);
+                window.draw(scoreText);
+
+                Text instruction("Press Enter to Continue", font, 20);
+                instruction.setFillColor(Color(150, 150, 150));
+                FloatRect instrBounds = instruction.getGlobalBounds();
+                instruction.setPosition(WINDOW_WIDTH / 2.0f - instrBounds.width / 2.0f, 370);
+                window.draw(instruction);
             }
         }
         else if (gameState == STATE_SETTINGS) {

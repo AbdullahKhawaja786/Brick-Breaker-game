@@ -207,13 +207,10 @@ int main() {
     bool enteringName = false;
     bool finishedNameInput = false;
 
-    // Message display system
     char messageText[100] = "";
     float messageTimer = 0.0f;
-    const float MESSAGE_DISPLAY_TIME = 3.0f;
 
     Clock clock;
-
     int previousGameState = STATE_INTRO;
 
     if (hasMenuMusic && gameState == STATE_INTRO) {
@@ -226,8 +223,6 @@ int main() {
         if (deltaTime > 0.05f) {
             deltaTime = 0.05f;
         }
-
-        // Update message timer
         if (messageTimer > 0) {
             messageTimer -= deltaTime;
             if (messageTimer <= 0) {
@@ -315,8 +310,7 @@ int main() {
                         messageTimer = 0;
                         gameState = STATE_PLAYING;
                     }
-                    else {
-                        // Display error message
+                    else{
                         safeStringCopy(messageText, "No saved game found!");
                         messageTimer = MESSAGE_DISPLAY_TIME;
                     }
@@ -464,12 +458,10 @@ int main() {
 
                 int hitBrick = checkBrickCollision(ballX, ballY, BALL_RADIUS, bricks);
                 if (hitBrick != -1 && bricks[hitBrick] != 0) {
-                    // Skip indestructible bricks (gray bricks with value -1)
                     if (bricks[hitBrick] == -1) {
                         handleBrickCollision(ballX, ballY, hitBrick, ballVelX, ballVelY);
                     }
                     else if (bricks[hitBrick] > 0) {
-                        // Move ball outside brick before handling collision to prevent multiple hits
                         int row = hitBrick / GRID_WIDTH;
                         int col = hitBrick % GRID_WIDTH;
                         float brickLeft = BRICK_OFFSET_X + col * (BRICK_WIDTH + BRICK_SPACING);
@@ -478,17 +470,13 @@ int main() {
                         float brickBottom = brickTop + BRICK_HEIGHT;
                         float brickCenterX = brickLeft + BRICK_WIDTH / 2.0f;
                         float brickCenterY = brickTop + BRICK_HEIGHT / 2.0f;
-
-                        // Calculate overlap on each side
                         float overlapLeft = (ballX + BALL_RADIUS) - brickLeft;
                         float overlapRight = brickRight - (ballX - BALL_RADIUS);
                         float overlapTop = (ballY + BALL_RADIUS) - brickTop;
                         float overlapBottom = brickBottom - (ballY - BALL_RADIUS);
-
-                        // Find the smallest overlap (collision side)
                         float minOverlap = overlapLeft;
                         int side = 0; // 0=left, 1=right, 2=top, 3=bottom
-                        
+
                         if (overlapRight < minOverlap) {
                             minOverlap = overlapRight;
                             side = 1;
@@ -619,7 +607,7 @@ int main() {
         }
         else if (gameState == STATE_MAIN_MENU) {
             drawMainMenuSimple(window, font, selectedMenuOption, titleFont, hasTitleFont, menuFont, hasMenuFont);
-            
+
             // Draw message if present
             if (messageTimer > 0) {
                 Text message(messageText, font, 24);

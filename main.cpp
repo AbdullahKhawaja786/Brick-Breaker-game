@@ -93,6 +93,20 @@ int main() {
         gameBgSprite.setScale(scaleX, scaleY);
     }
 
+    Texture logoTexture;
+    Sprite logoSprite;
+    bool hasLogo = logoTexture.loadFromFile("logo.png");
+    if (hasLogo) {
+        logoSprite.setTexture(logoTexture);
+        float scaleX = static_cast<float>(WINDOW_WIDTH) / logoTexture.getSize().x;
+        float scaleY = static_cast<float>(WINDOW_HEIGHT) / logoTexture.getSize().y;
+        logoSprite.setScale(scaleX, scaleY);
+        logoSprite.setPosition(0, 0);
+    }
+    else {
+        cerr << "WARNING: Could not load logo.png" << endl;
+    }
+
     Texture greenBrickIntact;
     bool hasGreenBrick = greenBrickIntact.loadFromFile("green_brick.png");
 
@@ -122,7 +136,7 @@ int main() {
     bool hasSkullTexture = skullTexture.loadFromFile("skull.png");
     bool hasCoinTexture = coinTexture.loadFromFile("coin.png");
 
-    int gameState = STATE_MAIN_MENU;
+    int gameState = STATE_INTRO;  // Start with intro screen
     int selectedMenuOption = 0;
     int selectedPauseOption = 0;
     int selectedSetting = 0;
@@ -195,9 +209,9 @@ int main() {
 
     Clock clock;
 
-    int previousGameState = STATE_MAIN_MENU;
+    int previousGameState = STATE_INTRO;
 
-    if (hasMenuMusic && gameState == STATE_MAIN_MENU) {
+    if (hasMenuMusic && gameState == STATE_INTRO) {
         menuMusic.play();
     }
 
@@ -211,7 +225,8 @@ int main() {
         // Handle music state transitions
         if (gameState != previousGameState) {
             if (hasMenuMusic) {
-                if (gameState == STATE_MAIN_MENU ||
+                if (gameState == STATE_INTRO ||
+                    gameState == STATE_MAIN_MENU ||
                     gameState == STATE_SETTINGS ||
                     gameState == STATE_HIGH_SCORES ||
                     gameState == STATE_GAME_OVER) {
@@ -228,7 +243,8 @@ int main() {
 
         // Ensure music keeps playing in menu states (auto-restart if needed)
         if (hasMenuMusic) {
-            if (gameState == STATE_MAIN_MENU ||
+            if (gameState == STATE_INTRO ||
+                gameState == STATE_MAIN_MENU ||
                 gameState == STATE_SETTINGS ||
                 gameState == STATE_HIGH_SCORES ||
                 gameState == STATE_GAME_OVER) {
@@ -244,7 +260,14 @@ int main() {
                 window.close();
             }
 
-            if (gameState == STATE_MAIN_MENU) {
+            if (gameState == STATE_INTRO) {
+                if (event.type == Event::KeyPressed) {
+                    if (event.key.code == Keyboard::Space) {
+                        gameState = STATE_MAIN_MENU;
+                    }
+                }
+            }
+            else if (gameState == STATE_MAIN_MENU) {
                 int choice = handleMainMenuInput(event, selectedMenuOption);
                 if (choice == MENU_START_GAME) {
                     initializeGame(level, score, lives, ballX, ballY, ballVelX, ballVelY,
@@ -489,8 +512,17 @@ int main() {
             }
         }
 
-        if (gameState == STATE_MAIN_MENU || gameState == STATE_SETTINGS ||
-            gameState == STATE_HIGH_SCORES || gameState == STATE_GAME_OVER) {
+        // Clear and draw background
+        if (gameState == STATE_INTRO) {
+            window.clear(Color(10, 10, 30));
+            if (hasLogo) {
+                window.draw(logoSprite);
+            }
+        }
+        else if (gameState == STATE_MAIN_MENU ||
+            gameState == STATE_SETTINGS ||
+            gameState == STATE_HIGH_SCORES ||
+            gameState == STATE_GAME_OVER) {
             window.clear(Color(10, 10, 30));
             if (hasMenuBg) {
                 window.draw(menuBgSprite);
@@ -503,7 +535,11 @@ int main() {
             }
         }
 
-        if (gameState == STATE_MAIN_MENU) {
+        // Render based on game state
+        if (gameState == STATE_INTRO) {
+            drawIntroscreen(window, logoSprite, hasLogo, font, titleFont, hasTitleFont);
+        }
+        else if (gameState == STATE_MAIN_MENU) {
             drawMainMenuSimple(window, font, selectedMenuOption, titleFont, hasTitleFont, menuFont, hasMenuFont);
         }
         else if (gameState == STATE_PLAYING || gameState == STATE_PAUSED) {

@@ -69,6 +69,21 @@ void concatStrings(char dest[], const char src[]) {
     }
     dest[destLen + i] = '\0';
 }
+void drawIntroscreen(RenderWindow& window, Sprite& logoSprite, bool hasLogo, Font& font, Font& titleFont, bool hasTitleFont) {
+    Text title("BRICK BREAKER", hasTitleFont ? titleFont : font, 70);
+    title.setFillColor(Color(0, 0, 0));
+    title.setStyle(Text::Style::Bold);
+    title.setOutlineColor(Color(0, 100, 100));
+    title.setOutlineThickness(3);
+    FloatRect titleBounds = title.getGlobalBounds();
+    title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 80);
+    window.draw(title);
+    Text instruction("Press SPACE to Start", font, 24);
+    instruction.setFillColor(Color::White);
+    FloatRect instrBounds = instruction.getGlobalBounds();
+    instruction.setPosition(WINDOW_WIDTH / 2.0f - instrBounds.width / 2.0f, 520);
+    window.draw(instruction);
+}
 
 void drawMainMenuSimple(RenderWindow& window, Font& font, int selectedOption,
     Font& titleFont, bool hasTitleFont, Font& menuFont, bool hasMenuFont) {

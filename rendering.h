@@ -77,7 +77,7 @@ void drawIntroscreen(RenderWindow& window, Sprite& logoSprite, bool hasLogo, Fon
     title.setOutlineColor(Color(0, 100, 100));
     title.setOutlineThickness(3);
     FloatRect titleBounds = title.getGlobalBounds();
-    title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 80);
+    title.setPosition(window_width / 2.0f - titleBounds.width / 2.0f, 80);
     window.draw(title);
     Text subtitle("The Ultimate Breakout", hasTitleFont ? titleFont : font, 55);
     subtitle.setFillColor(Color(0, 0, 0));
@@ -85,12 +85,12 @@ void drawIntroscreen(RenderWindow& window, Sprite& logoSprite, bool hasLogo, Fon
     subtitle.setOutlineColor(Color(0, 100, 100));
     subtitle.setOutlineThickness(3);
     FloatRect subtitleBounds = subtitle.getGlobalBounds();
-    subtitle.setPosition(WINDOW_WIDTH / 2.0f - subtitleBounds.width / 2.0f, 180);
+    subtitle.setPosition(window_width / 2.0f - subtitleBounds.width / 2.0f, 180);
     window.draw(subtitle);
     Text instruction("Press SPACE to Start", font, 24);
     instruction.setFillColor(Color::White);
     FloatRect instrBounds = instruction.getGlobalBounds();
-    instruction.setPosition(WINDOW_WIDTH / 2.0f - instrBounds.width / 2.0f, 520);
+    instruction.setPosition(window_width / 2.0f - instrBounds.width / 2.0f, 520);
     window.draw(instruction);
 }
 
@@ -102,7 +102,7 @@ void drawMainMenuSimple(RenderWindow& window, Font& font, int selectedOption,
     title.setOutlineColor(Color(0, 100, 100));
     title.setOutlineThickness(3);
     FloatRect titleBounds = title.getGlobalBounds();
-    title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 80);
+    title.setPosition(window_width / 2.0f - titleBounds.width / 2.0f, 80);
     window.draw(title);
     char options[][50] = {
     "Start New Game",
@@ -122,25 +122,25 @@ void drawMainMenuSimple(RenderWindow& window, Font& font, int selectedOption,
             text.setFillColor(Color::Black);
         }
         FloatRect textBounds = text.getGlobalBounds();
-        text.setPosition(WINDOW_WIDTH / 2.0f - textBounds.width / 2.0f, 230.0f + i * 50.0f);
+        text.setPosition(window_width / 2.0f - textBounds.width / 2.0f, 230.0f + i * 50.0f);
         window.draw(text);
     }
     Text instructions("Use Arrow Keys to Navigate, Enter to Select", hasMenuFont ? menuFont : font, 16);
     instructions.setFillColor(Color(200, 200, 200));
     FloatRect instrBounds = instructions.getGlobalBounds();
-    instructions.setPosition(WINDOW_WIDTH / 2.0f - instrBounds.width / 2.0f, 550);
+    instructions.setPosition(window_width / 2.0f - instrBounds.width / 2.0f, 550);
     window.draw(instructions);
 }
 
 void drawPauseMenu(RenderWindow& window, Font& font, int selectedOption,
     Font& menuFont, bool hasMenuFont) {
-    RectangleShape overlay(Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT));
+    RectangleShape overlay(Vector2f(window_width, window_height));
     overlay.setFillColor(Color(0, 0, 0, 180));
     window.draw(overlay);
     Text title("PAUSED", hasMenuFont ? menuFont : font, 50);
     title.setFillColor(Color(64, 224, 208));
     FloatRect titleBounds = title.getGlobalBounds();
-    title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 150);
+    title.setPosition(window_width / 2.0f - titleBounds.width / 2.0f, 150);
     window.draw(title);
     char options[][50] = { "Resume", "Save Game", "Settings", "Main Menu" };
     for (int i = 0; i < PAUSE_OPTIONS_COUNT; i++) {
@@ -153,20 +153,20 @@ void drawPauseMenu(RenderWindow& window, Font& font, int selectedOption,
             text.setFillColor(Color::White);
         }
         FloatRect textBounds = text.getGlobalBounds();
-        text.setPosition(WINDOW_WIDTH / 2.0f - textBounds.width / 2.0f, 250.0f + i * 50.0f);
+        text.setPosition(window_width / 2.0f - textBounds.width / 2.0f, 250.0f + i * 50.0f);
         window.draw(text);
     }
 }
 
 void drawPauseSettings(RenderWindow& window, Font& font, int musicVolume, int gameVolume, int selectedSetting) {
-    RectangleShape overlay(Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT));
+    RectangleShape overlay(Vector2f(window_width, window_height));
     overlay.setFillColor(Color(0, 0, 0, 200));
     window.draw(overlay);
 
     Text title("VOLUME SETTINGS", font, 45);
     title.setFillColor(Color(64, 224, 208));
     FloatRect titleBounds = title.getGlobalBounds();
-    title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 120);
+    title.setPosition(window_width / 2.0f - titleBounds.width / 2.0f, 120);
     window.draw(title);
 
     char buffer[100];
@@ -180,13 +180,13 @@ void drawPauseSettings(RenderWindow& window, Font& font, int musicVolume, int ga
     musicVolumeText.setFillColor((selectedSetting == 0) ? Color(64, 224, 208) : Color::White);
     if (selectedSetting == 0) musicVolumeText.setStyle(Text::Bold);
     FloatRect musicBounds = musicVolumeText.getGlobalBounds();
-    musicVolumeText.setPosition(WINDOW_WIDTH / 2.0f - musicBounds.width / 2.0f, 220);
+    musicVolumeText.setPosition(window_width / 2.0f - musicBounds.width / 2.0f, 220);
     window.draw(musicVolumeText);
 
     // Music volume bar
     float barWidth = 300.0f;
     float barHeight = 18.0f;
-    float barX = WINDOW_WIDTH / 2.0f - barWidth / 2.0f;
+    float barX = window_width / 2.0f - barWidth / 2.0f;
     RectangleShape musicBarBg(Vector2f(barWidth, barHeight));
     musicBarBg.setPosition(barX, 255);
     musicBarBg.setFillColor(Color(50, 50, 50));
@@ -208,7 +208,7 @@ void drawPauseSettings(RenderWindow& window, Font& font, int musicVolume, int ga
     gameVolumeText.setFillColor((selectedSetting == 1) ? Color(64, 224, 208) : Color::White);
     if (selectedSetting == 1) gameVolumeText.setStyle(Text::Bold);
     FloatRect gameBounds = gameVolumeText.getGlobalBounds();
-    gameVolumeText.setPosition(WINDOW_WIDTH / 2.0f - gameBounds.width / 2.0f, 310);
+    gameVolumeText.setPosition(window_width / 2.0f - gameBounds.width / 2.0f, 310);
     window.draw(gameVolumeText);
 
     // Game volume bar
@@ -227,17 +227,17 @@ void drawPauseSettings(RenderWindow& window, Font& font, int musicVolume, int ga
     Text navInstruct("UP/DOWN: Select Setting", font, 16);
     navInstruct.setFillColor(Color(150, 150, 150));
     FloatRect navBounds = navInstruct.getGlobalBounds();
-    navInstruct.setPosition(WINDOW_WIDTH / 2.0f - navBounds.width / 2.0f, 420);
+    navInstruct.setPosition(window_width / 2.0f - navBounds.width / 2.0f, 420);
     window.draw(navInstruct);
     Text adjustInstruct("LEFT/RIGHT: Adjust Volume", font, 16);
     adjustInstruct.setFillColor(Color(150, 150, 150));
     FloatRect adjustBounds = adjustInstruct.getGlobalBounds();
-    adjustInstruct.setPosition(WINDOW_WIDTH / 2.0f - adjustBounds.width / 2.0f, 445);
+    adjustInstruct.setPosition(window_width / 2.0f - adjustBounds.width / 2.0f, 445);
     window.draw(adjustInstruct);
     Text exitInstruct("ENTER/ESC: Return to Pause Menu", font, 16);
     exitInstruct.setFillColor(Color(150, 150, 150));
     FloatRect exitBounds = exitInstruct.getGlobalBounds();
-    exitInstruct.setPosition(WINDOW_WIDTH / 2.0f - exitBounds.width / 2.0f, 470);
+    exitInstruct.setPosition(window_width / 2.0f - exitBounds.width / 2.0f, 470);
     window.draw(exitInstruct);
 }
 
@@ -427,7 +427,7 @@ void drawGameOver(RenderWindow& window, Font& font, int score) {
     title.setOutlineColor(Color(100, 0, 0));
     title.setOutlineThickness(3);
     FloatRect titleBounds = title.getGlobalBounds();
-    title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 180);
+    title.setPosition(window_width / 2.0f - titleBounds.width / 2.0f, 180);
     window.draw(title);
     char buffer[100];
     safeStringCopy(buffer, "Final Score: ");
@@ -437,12 +437,12 @@ void drawGameOver(RenderWindow& window, Font& font, int score) {
     Text scoreText(buffer, font, 32);
     scoreText.setFillColor(Color::White);
     FloatRect scoreBounds = scoreText.getGlobalBounds();
-    scoreText.setPosition(WINDOW_WIDTH / 2.0f - scoreBounds.width / 2.0f, 280);
+    scoreText.setPosition(window_width / 2.0f - scoreBounds.width / 2.0f, 280);
     window.draw(scoreText);
     Text instruction("Press Enter to Continue", font, 20);
     instruction.setFillColor(Color(150, 150, 150));
     FloatRect instrBounds = instruction.getGlobalBounds();
-    instruction.setPosition(WINDOW_WIDTH / 2.0f - instrBounds.width / 2.0f, 370);
+    instruction.setPosition(window_width / 2.0f - instrBounds.width / 2.0f, 370);
     window.draw(instruction);
 }
 
@@ -451,7 +451,7 @@ void drawSettings(RenderWindow& window, Font& font, int difficulty, int musicVol
     Text title("SETTINGS", font, 50);
     title.setFillColor(Color(64, 224, 208));
     FloatRect titleBounds = title.getGlobalBounds();
-    title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 60);
+    title.setPosition(window_width / 2.0f - titleBounds.width / 2.0f, 60);
     window.draw(title);
     char buffer[100];
     // Difficulty
@@ -474,7 +474,7 @@ void drawSettings(RenderWindow& window, Font& font, int difficulty, int musicVol
     diffText.setFillColor((selectedSetting == 0) ? Color(64, 224, 208) : Color::White);
     if (selectedSetting == 0) diffText.setStyle(Text::Bold);
     FloatRect diffBounds = diffText.getGlobalBounds();
-    diffText.setPosition(WINDOW_WIDTH / 2.0f - diffBounds.width / 2.0f, 160);
+    diffText.setPosition(window_width / 2.0f - diffBounds.width / 2.0f, 160);
     window.draw(diffText);
     // Music Volume
     safeStringCopy(buffer, "Music Volume: ");
@@ -486,12 +486,12 @@ void drawSettings(RenderWindow& window, Font& font, int difficulty, int musicVol
     musicVolumeText.setFillColor((selectedSetting == 1) ? Color(64, 224, 208) : Color::White);
     if (selectedSetting == 1) musicVolumeText.setStyle(Text::Bold);
     FloatRect musicBounds = musicVolumeText.getGlobalBounds();
-    musicVolumeText.setPosition(WINDOW_WIDTH / 2.0f - musicBounds.width / 2.0f, 240);
+    musicVolumeText.setPosition(window_width / 2.0f - musicBounds.width / 2.0f, 240);
     window.draw(musicVolumeText);
     // Music volume bar
     float barWidth = 300.0f;
     float barHeight = 18.0f;
-    float barX = WINDOW_WIDTH / 2.0f - barWidth / 2.0f;
+    float barX = window_width / 2.0f - barWidth / 2.0f;
     RectangleShape musicBarBg(Vector2f(barWidth, barHeight));
     musicBarBg.setPosition(barX, 275);
     musicBarBg.setFillColor(Color(50, 50, 50));
@@ -512,7 +512,7 @@ void drawSettings(RenderWindow& window, Font& font, int difficulty, int musicVol
     gameVolumeText.setFillColor((selectedSetting == 2) ? Color(64, 224, 208) : Color::White);
     if (selectedSetting == 2) gameVolumeText.setStyle(Text::Bold);
     FloatRect gameBounds = gameVolumeText.getGlobalBounds();
-    gameVolumeText.setPosition(WINDOW_WIDTH / 2.0f - gameBounds.width / 2.0f, 330);
+    gameVolumeText.setPosition(window_width / 2.0f - gameBounds.width / 2.0f, 330);
     window.draw(gameVolumeText);
     // Game volume bar
     RectangleShape gameBarBg(Vector2f(barWidth, barHeight));
@@ -529,75 +529,85 @@ void drawSettings(RenderWindow& window, Font& font, int difficulty, int musicVol
     Text navInstruct("UP/DOWN: Select Setting", font, 16);
     navInstruct.setFillColor(Color(150, 150, 150));
     FloatRect navBounds = navInstruct.getGlobalBounds();
-    navInstruct.setPosition(WINDOW_WIDTH / 2.0f - navBounds.width / 2.0f, 450);
+    navInstruct.setPosition(window_width / 2.0f - navBounds.width / 2.0f, 450);
     window.draw(navInstruct);
     Text adjustInstruct("LEFT/RIGHT: Adjust Value", font, 16);
     adjustInstruct.setFillColor(Color(150, 150, 150));
     FloatRect adjustBounds = adjustInstruct.getGlobalBounds();
-    adjustInstruct.setPosition(WINDOW_WIDTH / 2.0f - adjustBounds.width / 2.0f, 475);
+    adjustInstruct.setPosition(window_width / 2.0f - adjustBounds.width / 2.0f, 475);
     window.draw(adjustInstruct);
     Text exitInstruct("ENTER/ESC: Save and Exit", font, 16);
     exitInstruct.setFillColor(Color(150, 150, 150));
     FloatRect exitBounds = exitInstruct.getGlobalBounds();
-    exitInstruct.setPosition(WINDOW_WIDTH / 2.0f - exitBounds.width / 2.0f, 500);
+    exitInstruct.setPosition(window_width / 2.0f - exitBounds.width / 2.0f, 500);
     window.draw(exitInstruct);
 }
 
-void drawHighScores(RenderWindow& window, Font& font, int scores[], char names[][MAX_NAME_LENGTH]) {
+void drawHighScores(RenderWindow& window, Font& font, int scores[], char names[][maximun_name_length]) {
     window.clear(Color(20, 20, 40));
     Text title("HIGH SCORES", font, 48);
     title.setFillColor(Color::Yellow);
     FloatRect titleBounds = title.getGlobalBounds();
-    title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 50);
+    title.setPosition(window_width / 2.0f - titleBounds.width / 2.0f, 50);
     window.draw(title);
-    for (int i = 0; i < MAX_HIGH_SCORES; i++) {
+
+    // Fixed positioning for better alignment / Margins 
+    float leftColumnX = 140.0f;  // Position for rank and name
+    float rightColumnX = 600.0f; // Position for score (right-aligned)
+
+    for (int i = 0; i < maximum_scores; i++) {
+        // Draw rank and name
         char buffer[200];
         char numStr[10];
-        char scoreStr[20];
         intToString(i + 1, numStr);
         safeStringCopy(buffer, numStr);
         concatStrings(buffer, ". ");
         concatStrings(buffer, names[i]);
-        int nameLen = getLength(names[i]);
-        for (int j = nameLen; j < 20; j++) {
-            concatStrings(buffer, " ");
-        }
+
+        Text nameText(buffer, font, 22);
+        nameText.setFillColor(Color::White);
+        nameText.setPosition(leftColumnX, 140.0f + i * 36.0f);
+        window.draw(nameText);
+
+        // Draw score (right-aligned)
+        char scoreStr[20];
         intToString(scores[i], scoreStr);
-        concatStrings(buffer, scoreStr);
-        Text scoreText(buffer, font, 22);
-        scoreText.setFillColor(Color::White);
-        scoreText.setPosition(180, 140.0f + i * 36.0f);
+        Text scoreText(scoreStr, font, 22);
+        scoreText.setFillColor(Color(255, 215, 0)); 
+        FloatRect scoreBounds = scoreText.getGlobalBounds();
+        scoreText.setPosition(rightColumnX - scoreBounds.width, 140.0f + i * 36.0f);
         window.draw(scoreText);
     }
+
     Text instruction("Press Enter or ESC to Return", font, 18);
     instruction.setFillColor(Color(150, 150, 150));
     FloatRect instrBounds = instruction.getGlobalBounds();
-    instruction.setPosition(WINDOW_WIDTH / 2.0f - instrBounds.width / 2.0f, 550);
+    instruction.setPosition(window_width / 2.0f - instrBounds.width / 2.0f, 550);
     window.draw(instruction);
 }
 
 void drawNameInput(RenderWindow& window, Font& font, char playerName[]) {
-    RectangleShape overlay(Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT));
+    RectangleShape overlay(Vector2f(window_width, window_height));
     overlay.setFillColor(Color(0, 0, 0, 180));
     window.draw(overlay);
     Text prompt("Enter Your Name:", font, 38);
     prompt.setFillColor(Color::Yellow);
     FloatRect promptBounds = prompt.getGlobalBounds();
-    prompt.setPosition(WINDOW_WIDTH / 2.0f - promptBounds.width / 2.0f, 200);
+    prompt.setPosition(window_width / 2.0f - promptBounds.width / 2.0f, 200);
     window.draw(prompt);
     Text nameText(playerName, font, 35);
     nameText.setFillColor(Color::White);
     FloatRect nameBounds = nameText.getGlobalBounds();
-    nameText.setPosition(WINDOW_WIDTH / 2.0f - nameBounds.width / 2.0f, 280);
+    nameText.setPosition(window_width / 2.0f - nameBounds.width / 2.0f, 280);
     window.draw(nameText);
     RectangleShape cursor(Vector2f(3, 35));
-    cursor.setPosition(WINDOW_WIDTH / 2.0f + nameBounds.width / 2.0f + 8, 280);
+    cursor.setPosition(window_width / 2.0f + nameBounds.width / 2.0f + 8, 280);
     cursor.setFillColor(Color::White);
     window.draw(cursor);
     Text instruction("Press Enter when done", font, 20);
     instruction.setFillColor(Color(150, 150, 150));
     FloatRect instrBounds = instruction.getGlobalBounds();
-    instruction.setPosition(WINDOW_WIDTH / 2.0f - instrBounds.width / 2.0f, 360);
+    instruction.setPosition(window_width / 2.0f - instrBounds.width / 2.0f, 360);
     window.draw(instruction);
 }
 

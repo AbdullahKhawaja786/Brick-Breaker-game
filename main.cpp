@@ -16,7 +16,7 @@ using namespace sf;
 
 int main() {
     srand(static_cast<unsigned>(time(0)));
-    RenderWindow window(VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), WINDOW_TITLE);
+    RenderWindow window(VideoMode(window_width, window_height), WINDOW_TITLE);
     window.setFramerateLimit(60);
 
     Font font;
@@ -80,16 +80,16 @@ int main() {
     bool hasMenuBg = menuBackground.loadFromFile("menu_background.png");
     if (hasMenuBg) {
         menuBgSprite.setTexture(menuBackground);
-        float scaleX = static_cast<float>(WINDOW_WIDTH) / menuBackground.getSize().x;
-        float scaleY = static_cast<float>(WINDOW_HEIGHT) / menuBackground.getSize().y;
+        float scaleX = static_cast<float>(window_width) / menuBackground.getSize().x;
+        float scaleY = static_cast<float>(window_height) / menuBackground.getSize().y;
         menuBgSprite.setScale(scaleX, scaleY);
     }
 
     bool hasGameBg = gameBackground.loadFromFile("game_background.png");
     if (hasGameBg) {
         gameBgSprite.setTexture(gameBackground);
-        float scaleX = static_cast<float>(WINDOW_WIDTH) / gameBackground.getSize().x;
-        float scaleY = static_cast<float>(WINDOW_HEIGHT) / gameBackground.getSize().y;
+        float scaleX = static_cast<float>(window_width) / gameBackground.getSize().x;
+        float scaleY = static_cast<float>(window_height) / gameBackground.getSize().y;
         gameBgSprite.setScale(scaleX, scaleY);
     }
 
@@ -98,8 +98,8 @@ int main() {
     bool hasLogo = logoTexture.loadFromFile("logo.png");
     if (hasLogo) {
         logoSprite.setTexture(logoTexture);
-        float scaleX = static_cast<float>(WINDOW_WIDTH) / logoTexture.getSize().x;
-        float scaleY = static_cast<float>(WINDOW_HEIGHT) / logoTexture.getSize().y;
+        float scaleX = static_cast<float>(window_width) / logoTexture.getSize().x;
+        float scaleY = static_cast<float>(window_height) / logoTexture.getSize().y;
         logoSprite.setScale(scaleX, scaleY);
         logoSprite.setPosition(0, 0);
     }
@@ -145,11 +145,11 @@ int main() {
     int level = 1;
     int score = 0;
     int lives = INITIAL_LIVES;
-    float ballX = WINDOW_WIDTH / 2.0f;
+    float ballX = window_width / 2.0f;
     float ballY = PADDLE_Y - BALL_RADIUS - 5.0f;
     float ballVelX = 0.0f;
     float ballVelY = 0.0f;
-    float paddleX = WINDOW_WIDTH / 2.0f - PADDLE_WIDTH / 2.0f;
+    float paddleX = window_width / 2.0f - PADDLE_WIDTH / 2.0f;
     float currentPaddleWidth = PADDLE_WIDTH;
     float currentBallSpeed = BALL_SPEED;
     float ballSpeedMultiplier = 1.0f;
@@ -181,8 +181,8 @@ int main() {
     }
 
     int difficulty = 1;
-    int musicVolume = DEFAULT_MUSIC_VOLUME;
-    int gameVolume = DEFAULT_GAME_VOLUME;
+    int musicVolume = default_music;
+    int gameVolume = default_gamevolume;
     loadSettings(SETTINGS_FILE, difficulty, musicVolume, gameVolume);
 
     if (hasMenuMusic) {
@@ -199,11 +199,11 @@ int main() {
         }
     }
 
-    int highScores[MAX_HIGH_SCORES];
-    char highScoreNames[MAX_HIGH_SCORES][MAX_NAME_LENGTH];
+    int highScores[maximum_scores];
+    char highScoreNames[maximum_scores][maximun_name_length];
     loadHighScores(HIGHSCORE_FILE, highScores, highScoreNames);
 
-    char playerName[MAX_NAME_LENGTH] = "";
+    char playerName[maximun_name_length] = "";
     int nameLength = 0;
     bool enteringName = false;
     bool finishedNameInput = false;
@@ -445,7 +445,7 @@ int main() {
                 else if (event.type == Event::KeyPressed &&
                     event.key.code == Keyboard::Return) {
                     bool isHighScore = false;
-                    for (int i = 0; i < MAX_HIGH_SCORES; i++) {
+                    for (int i = 0; i < maximum_scores; i++) {
                         if (score > highScores[i]) {
                             isHighScore = true;
                             break;
@@ -476,7 +476,7 @@ int main() {
                 else if (event.type == Event::KeyPressed &&
                     event.key.code == Keyboard::Return) {
                     bool isHighScore = false;
-                    for (int i = 0; i < MAX_HIGH_SCORES; i++) {
+                    for (int i = 0; i < maximum_scores; i++) {
                         if (score > highScores[i]) {
                             isHighScore = true;
                             break;
@@ -604,10 +604,6 @@ int main() {
             }
         }
 
-        // ========================================
-        // RENDERING SECTION - INSIDE THE LOOP!
-        // ========================================
-
         // Clear and draw background
         if (gameState == STATE_INTRO) {
             window.clear(Color(10, 10, 30));
@@ -645,7 +641,7 @@ int main() {
                 message.setOutlineColor(Color::Black);
                 message.setOutlineThickness(2);
                 FloatRect msgBounds = message.getGlobalBounds();
-                message.setPosition(WINDOW_WIDTH / 2.0f - msgBounds.width / 2.0f, 500);
+                message.setPosition(window_width / 2.0f - msgBounds.width / 2.0f, 500);
                 window.draw(message);
             }
         }
@@ -668,7 +664,7 @@ int main() {
                 message.setOutlineColor(Color::Black);
                 message.setOutlineThickness(2);
                 FloatRect msgBounds = message.getGlobalBounds();
-                message.setPosition(WINDOW_WIDTH / 2.0f - msgBounds.width / 2.0f, 40);
+                message.setPosition(window_width / 2.0f - msgBounds.width / 2.0f, 40);
                 window.draw(message);
             }
 
@@ -713,13 +709,13 @@ int main() {
                 title.setOutlineColor(Color(200, 150, 0));
                 title.setOutlineThickness(3);
                 FloatRect titleBounds = title.getGlobalBounds();
-                title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 120);
+                title.setPosition(window_width / 2.0f - titleBounds.width / 2.0f, 120);
                 window.draw(title);
 
                 Text subtitle("You've Completed All Levels!", font, 32);
                 subtitle.setFillColor(Color::White);
                 FloatRect subtitleBounds = subtitle.getGlobalBounds();
-                subtitle.setPosition(WINDOW_WIDTH / 2.0f - subtitleBounds.width / 2.0f, 200);
+                subtitle.setPosition(window_width / 2.0f - subtitleBounds.width / 2.0f, 200);
                 window.draw(subtitle);
 
                 char buffer[100];
@@ -730,7 +726,7 @@ int main() {
                 Text scoreText(buffer, font, 32);
                 scoreText.setFillColor(Color(64, 224, 208));
                 FloatRect scoreBounds = scoreText.getGlobalBounds();
-                scoreText.setPosition(WINDOW_WIDTH / 2.0f - scoreBounds.width / 2.0f, 260);
+                scoreText.setPosition(window_width / 2.0f - scoreBounds.width / 2.0f, 260);
                 window.draw(scoreText);
 
                 drawNameInput(window, font, playerName);
@@ -743,13 +739,13 @@ int main() {
                 title.setOutlineColor(Color(200, 150, 0));
                 title.setOutlineThickness(3);
                 FloatRect titleBounds = title.getGlobalBounds();
-                title.setPosition(WINDOW_WIDTH / 2.0f - titleBounds.width / 2.0f, 120);
+                title.setPosition(window_width / 2.0f - titleBounds.width / 2.0f, 120);
                 window.draw(title);
 
                 Text subtitle("You've Completed All Levels!", font, 32);
                 subtitle.setFillColor(Color::White);
                 FloatRect subtitleBounds = subtitle.getGlobalBounds();
-                subtitle.setPosition(WINDOW_WIDTH / 2.0f - subtitleBounds.width / 2.0f, 200);
+                subtitle.setPosition(window_width / 2.0f - subtitleBounds.width / 2.0f, 200);
                 window.draw(subtitle);
 
                 char buffer[100];
@@ -760,13 +756,13 @@ int main() {
                 Text scoreText(buffer, font, 32);
                 scoreText.setFillColor(Color(64, 224, 208));
                 FloatRect scoreBounds = scoreText.getGlobalBounds();
-                scoreText.setPosition(WINDOW_WIDTH / 2.0f - scoreBounds.width / 2.0f, 280);
+                scoreText.setPosition(window_width / 2.0f - scoreBounds.width / 2.0f, 280);
                 window.draw(scoreText);
 
                 Text instruction("Press Enter to Continue", font, 20);
                 instruction.setFillColor(Color(150, 150, 150));
                 FloatRect instrBounds = instruction.getGlobalBounds();
-                instruction.setPosition(WINDOW_WIDTH / 2.0f - instrBounds.width / 2.0f, 370);
+                instruction.setPosition(window_width / 2.0f - instrBounds.width / 2.0f, 370);
                 window.draw(instruction);
             }
         }

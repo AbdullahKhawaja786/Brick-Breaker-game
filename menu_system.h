@@ -146,7 +146,7 @@ bool getPlayerNameInput(Event& event, char playerName[], int& nameLength, bool& 
                 return true;
             }
         }
-        else if (event.text.unicode < 128 && nameLength < MAX_NAME_LENGTH - 1) {
+        else if (event.text.unicode < 128 && nameLength < maximun_name_length - 1) {
             playerName[nameLength] = static_cast<char>(event.text.unicode);
             nameLength++;
             playerName[nameLength] = '\0';

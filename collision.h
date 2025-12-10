@@ -2,8 +2,6 @@
 #define COLLISION_H
 #include <cmath>
 #include "constants.h"
-
-// User-defined absolute value function
 float absoluteValue(float value) {
     if (value < 0) {
         return -value;
@@ -23,7 +21,7 @@ void handlePaddleCollision(float ballX, float paddleX, float paddleWidth,
     float& ballVelX, float& ballVelY) {
     ballVelY = -absoluteValue(ballVelY);
     float hitPos = (ballX - paddleX) / paddleWidth;
-    float angle = (hitPos - 0.5f) * 2.0f;
+    float angle = (hitPos - 0.5f) * 2.0f; //-1 to 1
     ballVelX = angle * BALL_SPEED * 0.7f;
     float speed = sqrt(ballVelX * ballVelX + ballVelY * ballVelY);
     if (speed < BALL_SPEED * 0.8f) {
@@ -94,8 +92,8 @@ void checkWallCollisions(float& ballX, float& ballY, float ballRadius,
         ballX = ballRadius;
         ballVelX = absoluteValue(ballVelX);
     }
-    if (ballX + ballRadius > WINDOW_WIDTH) {
-        ballX = WINDOW_WIDTH - ballRadius;
+    if (ballX + ballRadius > window_width) {
+        ballX = window_width - ballRadius;
         ballVelX = -absoluteValue(ballVelX);
     }
     if (ballY - ballRadius < 0) {
@@ -105,7 +103,7 @@ void checkWallCollisions(float& ballX, float& ballY, float ballRadius,
 }
 
 bool checkBallLost(float ballY, float ballRadius) {
-    return ballY - ballRadius > WINDOW_HEIGHT;
+    return ballY - ballRadius > window_height;
 }
 
 int checkPowerUpCollision(float paddleX, float paddleY, float paddleWidth, float paddleHeight,

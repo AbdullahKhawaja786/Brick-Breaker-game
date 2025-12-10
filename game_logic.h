@@ -109,8 +109,8 @@ void initializeGame(int& level, int& score, int& lives, float& ballX, float& bal
     currentPaddleWidth = getDifficultyPaddleWidth(difficulty);
     currentBallSpeed = getLevelBallSpeed(level, difficulty);
 
-    paddleX = WINDOW_WIDTH / 2.0f - currentPaddleWidth / 2.0f;
-    ballX = WINDOW_WIDTH / 2.0f;
+    paddleX = window_width / 2.0f - currentPaddleWidth / 2.0f;
+    ballX = window_width / 2.0f;
     ballY = PADDLE_Y - BALL_RADIUS - 5.0f;
     ballVelX = 0.0f;
     ballVelY = 0.0f;
@@ -163,10 +163,10 @@ void updatePaddlePosition(float& paddleX, bool leftPressed, bool rightPressed,
         paddleX -= PADDLE_SPEED * deltaTime;
         if (paddleX < 0) paddleX = 0;
     }
-    if (rightPressed && paddleX < WINDOW_WIDTH - paddleWidth) {
+    if (rightPressed && paddleX < window_width - paddleWidth) {
         paddleX += PADDLE_SPEED * deltaTime;
-        if (paddleX > WINDOW_WIDTH - paddleWidth) {
-            paddleX = WINDOW_WIDTH - paddleWidth;
+        if (paddleX > window_width - paddleWidth) {
+            paddleX = window_width - paddleWidth;
         }
     }
 }
@@ -198,7 +198,7 @@ void updatePowerUps(float powerUpX[], float powerUpY[], bool powerUpActive[],
     for (int i = 0; i < MAX_POWERUPS; i++) {
         if (powerUpActive[i]) {
             powerUpY[i] += POWERUP_FALL_SPEED * deltaTime;
-            if (powerUpY[i] > WINDOW_HEIGHT) {
+            if (powerUpY[i] > window_height) {
                 powerUpActive[i] = false;
             }
         }

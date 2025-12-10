@@ -2,8 +2,8 @@
 #define CONSTANTS_H
 
 // Window settings
-const int WINDOW_WIDTH = 800;
-const int WINDOW_HEIGHT = 600;
+const int window_width = 800;
+const int window_height = 600;
 const char WINDOW_TITLE[] = "Brick Breaker Game";
 
 // Paddle settings
@@ -87,8 +87,8 @@ const char MENU_MUSIC_FILE[] = "menu_music.ogg";
 const char BRICK_BREAK_SOUND_FILE[] = "brick_break.ogg";
 
 // High scores
-const int MAX_HIGH_SCORES = 10;
-const int MAX_NAME_LENGTH = 50;
+const int maximum_scores = 10;
+const int maximun_name_length = 50;
 
 // Initial lives
 const int INITIAL_LIVES = 3;
@@ -97,12 +97,13 @@ const int MAX_LEVELS = 5;
 // Music and sound settings
 const int MIN_VOLUME = 0;
 const int MAX_VOLUME = 100;
-const int DEFAULT_MUSIC_VOLUME = 50;
-const int DEFAULT_GAME_VOLUME = 70;
+const int default_music = 50;
+const int default_gamevolume = 70;
 const int VOLUME_STEP = 10;
 
 // Sound effect settings
 const int MAX_SOUND_CHANNELS = 5;
 
+//load game failed message timer
 const float MESSAGE_DISPLAY_TIME = 3.0f;
 #endif
